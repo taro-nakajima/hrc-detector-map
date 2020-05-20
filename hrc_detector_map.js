@@ -51,7 +51,7 @@ function draw_DetMap(){
     context.lineWidth=1;
 
 
-
+    //test
 
     // line
     context.strokeStyle = "rgb(255, 0, 0)";
