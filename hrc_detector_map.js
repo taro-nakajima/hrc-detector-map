@@ -1,4 +1,5 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
+//test
 var version = "0.1";
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 
