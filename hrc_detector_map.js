@@ -29,6 +29,9 @@ var Hmax=5;
 var Kmax=5;
 var Lmax=1;
 
+var MaxTTH = 60.0;
+var scale=500;
+
 
 function draw() {
     document.getElementById("verNum").innerHTML=version;
@@ -70,24 +73,33 @@ function draw_DetMap(){
     for (var H=-Hmax;H<=Hmax;H+=1){
         for (var K=-Kmax;K<=Kmax;K+=1){
 
-            for(let i=0;i<3;i+=1){
-                Ghkl[i]=H*a_star[i]+K*b_star[i];
+            if((H==0)&&(K==0)){
+
             }
+            else{
+                for(let i=0;i<3;i+=1){
+                    Ghkl[i]=H*a_star[i]+K*b_star[i];
+                }
+    
+                let G_len=0;
+                for(let i=0;i<3;i+=1){
+                    G_len=G_len+Ghkl[i]**2.0;
+                }
+                G_len=Math.sqrt(G_len);
+    
+                let cos2th=Ghkl[0]/G_len;
+                let twotheta= Math.acos(cos2th);   //in radidan
 
-            let G_len=0;
-            for(let i=0;i<3;i+=1){
-                G_len=G_len+Ghkl[i]**2.0;
+                let PosX=scale*twotheta/Math.PI*180.0/MaxTTH+X0;
+
+                let PosY=scale*Ghkl[2]/G_len+Y0;
+    
+    
+    
+                context.beginPath();
+                context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
+                context.stroke();    
             }
-            G_len=Math.sqrt(G_len);
-
-            let scale=500;
-            let PosX=scale*Ghkl[1]/G_len+X0;
-            temp2=PosX;
-            let PosY=scale*Ghkl[2]/G_len+Y0;
-
-            context.beginPath();
-            context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
-            context.stroke();
         }
     }
 
