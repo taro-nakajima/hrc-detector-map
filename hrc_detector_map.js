@@ -40,9 +40,6 @@ function draw() {
 
 function draw_DetMap(){
 
-
-    radius = Number(document.getElementById('a').value);
-
     var canvas = document.getElementById('CanvasDetMap');
     var context = canvas.getContext('2d');
 
@@ -51,7 +48,9 @@ function draw_DetMap(){
     context.strokeStyle = "rgb(0, 0, 0)";
     context.lineWidth=1;
 
-
+    Hmax = Number(document.getElementById('Hmax').value);
+    Kmax = Number(document.getElementById('Kmax').value);
+    Lmax = Number(document.getElementById('Lmax').value);
 
 
     // line
