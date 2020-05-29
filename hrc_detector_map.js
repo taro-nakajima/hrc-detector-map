@@ -29,8 +29,10 @@ var Hmax=5;
 var Kmax=5;
 var Lmax=1;
 
-var MaxTTH = 60.0;
-var scale=500;
+var maxphih = 60.0;
+var maxphiv = 60.0;
+var scaleX=800;
+var scaleY=500;
 
 
 function draw() {
@@ -72,40 +74,43 @@ function draw_DetMap(){
     var Ghkl=new Array(3);
     for (var H=-Hmax;H<=Hmax;H+=1){
         for (var K=-Kmax;K<=Kmax;K+=1){
+            for (var L=-Lmax;L<=Lmax;L+=1){
 
-            if((H==0)&&(K==0)){
+                if((H==0)&&(K==0)&&(L==0)){
 
-            }
-            else{
-                for(let i=0;i<3;i+=1){
-                    Ghkl[i]=H*a_star[i]+K*b_star[i];
                 }
+                else{
+                    for(let i=0;i<3;i+=1){
+                        Ghkl[i]=H*a_star[i]+K*b_star[i]+L*c_star[i];
+                    }
     
-                let G_len=0;
-                for(let i=0;i<3;i+=1){
-                    G_len=G_len+Ghkl[i]**2.0;
+                    let G_len=0;        //calculate length of G
+                    for(let i=0;i<3;i+=1){
+                        G_len=G_len+Ghkl[i]**2.0;
+                    }
+                    G_len=Math.sqrt(G_len);
+                 
+                    let sinphiv=Ghkl[2]/G_len;
+                    let phiv = Math.asin(sinphiv);
+                    let sinphih=Ghkl[1]/(G_len*Math.cos(phiv));
+                    let phih=  Math.asin(sinphih);
+                    //let cos2th=Ghkl[0]/G_len;
+                    //let twotheta= Math.acos(cos2th);   //in radidan
+
+                    let PosX=scaleX*phih/Math.PI*180.0/maxphih+X0;
+                    let PosY=scaleY*phiv/Math.PI*180.0/maxphiv+Y0;
+    
+                    context.beginPath();
+                    context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
+                    context.stroke();    
                 }
-                G_len=Math.sqrt(G_len);
-    
-                let cos2th=Ghkl[0]/G_len;
-                let twotheta= Math.acos(cos2th);   //in radidan
-
-                let PosX=scale*twotheta/Math.PI*180.0/MaxTTH+X0;
-
-                let PosY=scale*Ghkl[2]/G_len+Y0;
-    
-    
-    
-                context.beginPath();
-                context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
-                context.stroke();    
             }
         }
     }
 
     //text for debug
-    context.font = "italic 10px sans-serif";
-    context.fillText(Ghkl[2], X0, Y0+length1);
+    //context.font = "italic 10px sans-serif";
+    //context.fillText(Ghkl[2], X0, Y0+length1);
     
 
 }
