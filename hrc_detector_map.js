@@ -1,4 +1,5 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
+//test
 var version = "0.1";
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 
@@ -28,6 +29,11 @@ var Hmax=5;
 var Kmax=5;
 var Lmax=1;
 
+var maxphih = 60.0;
+var maxphiv = 60.0;
+var scaleX=800;
+var scaleY=500;
+
 
 function draw() {
     document.getElementById("verNum").innerHTML=version;
@@ -39,9 +45,6 @@ function draw() {
 
 function draw_DetMap(){
 
-
-    radius = Number(document.getElementById('a').value);
-
     var canvas = document.getElementById('CanvasDetMap');
     var context = canvas.getContext('2d');
 
@@ -50,8 +53,10 @@ function draw_DetMap(){
     context.strokeStyle = "rgb(0, 0, 0)";
     context.lineWidth=1;
 
+    Hmax = Number(document.getElementById('Hmax').value);
+    Kmax = Number(document.getElementById('Kmax').value);
+    Lmax = Number(document.getElementById('Lmax').value);
 
-    //test
 
     // line
     context.strokeStyle = "rgb(255, 0, 0)";
@@ -69,31 +74,43 @@ function draw_DetMap(){
     var Ghkl=new Array(3);
     for (var H=-Hmax;H<=Hmax;H+=1){
         for (var K=-Kmax;K<=Kmax;K+=1){
+            for (var L=-Lmax;L<=Lmax;L+=1){
 
-            for(let i=0;i<3;i+=1){
-                Ghkl[i]=H*a_star[i]+K*b_star[i];
+                if((H==0)&&(K==0)&&(L==0)){
+
+                }
+                else{
+                    for(let i=0;i<3;i+=1){
+                        Ghkl[i]=H*a_star[i]+K*b_star[i]+L*c_star[i];
+                    }
+    
+                    let G_len=0;        //calculate length of G
+                    for(let i=0;i<3;i+=1){
+                        G_len=G_len+Ghkl[i]**2.0;
+                    }
+                    G_len=Math.sqrt(G_len);
+                 
+                    let sinphiv=Ghkl[2]/G_len;
+                    let phiv = Math.asin(sinphiv);
+                    let sinphih=Ghkl[1]/(G_len*Math.cos(phiv));
+                    let phih=  Math.asin(sinphih);
+                    //let cos2th=Ghkl[0]/G_len;
+                    //let twotheta= Math.acos(cos2th);   //in radidan
+
+                    let PosX=scaleX*phih/Math.PI*180.0/maxphih+X0;
+                    let PosY=scaleY*phiv/Math.PI*180.0/maxphiv+Y0;
+    
+                    context.beginPath();
+                    context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
+                    context.stroke();    
+                }
             }
-
-            let G_len=0;
-            for(let i=0;i<3;i+=1){
-                G_len=G_len+Ghkl[i]**2.0;
-            }
-            G_len=Math.sqrt(G_len);
-
-            let scale=500;
-            let PosX=scale*Ghkl[1]/G_len+X0;
-            temp2=PosX;
-            let PosY=scale*Ghkl[2]/G_len+Y0;
-
-            context.beginPath();
-            context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
-            context.stroke();
         }
     }
 
     //text for debug
-    context.font = "italic 10px sans-serif";
-    context.fillText(Ghkl[2], X0, Y0+length1);
+    //context.font = "italic 10px sans-serif";
+    //context.fillText(Ghkl[2], X0, Y0+length1);
     
 
 }
