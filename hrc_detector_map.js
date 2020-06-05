@@ -43,7 +43,12 @@ function draw() {
     document.getElementById("verNum").innerHTML=version;
     document.getElementById("verNum2").innerHTML=version;
 
+    set_Lattice();
     draw_DetMap();
+
+}
+
+function set_Lattice(){
 
 }
 
