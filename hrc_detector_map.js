@@ -9,6 +9,10 @@ var Y0 = 250;
 var length1=200;
 var radius=5;
 
+var HD = 40;    // height of center of PSD from incident beam
+var LD = 2800;  // length of PSD
+var L20 = 4000; // distance from sample to PSD in horizontal plane
+
 var a_star = new Array(3);
 var b_star = new Array(3);
 var c_star = new Array(3);
@@ -91,15 +95,16 @@ function draw_DetMap(){
                     G_len=Math.sqrt(G_len);
                  
                     let sinphiv=Ghkl[2]/G_len;
-                    let phiv = Math.asin(sinphiv);
+                    let phiv = Math.asin(sinphiv);      // in radian
                     let sinphih=Ghkl[1]/(G_len*Math.cos(phiv));
-                    let phih=  Math.asin(sinphih);
+                    let phih=  Math.asin(sinphih);      // in radian
                     //let cos2th=Ghkl[0]/G_len;
                     //let twotheta= Math.acos(cos2th);   //in radidan
 
                     let PosX=scaleX*phih/Math.PI*180.0/maxphih+X0;
-                    let PosY=scaleY*phiv/Math.PI*180.0/maxphiv+Y0;
-    
+                    //let PosY=scaleY*phiv/Math.PI*180.0/maxphiv+Y0;
+                    let PosY=scaleY*(HD+LD/2-L20*Math.tan(phiv))/LD
+
                     context.beginPath();
                     context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
                     context.stroke();    
