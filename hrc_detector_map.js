@@ -1,6 +1,6 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
 
-//2020/6/18,  introduce lattife constants and sample orientation 
+//2020/6/18-19,  introduce lattife constants and sample orientation 
 //2020/6/5
 var version = "0.2";
 
