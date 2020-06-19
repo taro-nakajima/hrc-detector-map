@@ -1,8 +1,9 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
+
 //2020/6/18,  introduce lattife constants and sample orientation 
 //2020/6/5
-
 var version = "0.2";
+
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 
 var X0 = 0;
@@ -46,17 +47,25 @@ var maxphiv = 60.0;
 var scaleX=800;
 var scaleY=500;
 
+var maxphih = 60.0;
+var maxphiv = 60.0;
+var scaleX=800;
+var scaleY=500;
+
 
 function draw() {
     document.getElementById("verNum").innerHTML=version;
     document.getElementById("verNum2").innerHTML=version;
 
+
     //set_Lattice();
+    set_Lattice();
     draw_DetMap();
 
 }
 
 function set_Lattice(){
+
     //input parameters: lattice constants and sample orientation)
     a = Number(document.getElementById('a').value);
     b = Number(document.getElementById('a').value);
@@ -90,8 +99,6 @@ function set_Lattice(){
 
     let cosphi=Rvy/Math.sqrt(Rvy**2.0+Rvz**2.0);
     let sinphi=Rvz/Math.sqrt(Rvy**2.0+Rvz**2.0);
-
-
 
 
 
@@ -163,10 +170,14 @@ function draw_DetMap(){
     }
 
     //text for debug
+
     context.font = "italic 13px sans-serif";
     //context.fillText(Ghkl[2], X0, Y0+length1);
     //context.fillText(alpha, X0, Y0+length1);
     // console.log("Hallo")
+    //context.font = "italic 10px sans-serif";
+    //context.fillText(Ghkl[2], X0, Y0+length1);
+
 
 }
 
