@@ -1,6 +1,7 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
 
-//2020/6/18-19,  introduce lattife constants and sample orientation 
+//2020/6/24,  define 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
+//2020/6/18-19,  introduce lattice constants and sample orientation 
 //2020/6/5
 var version = "0.2";
 
@@ -22,21 +23,24 @@ var v = new Array(3);
 var ux = new Array(3);
 var vx = new Array(3);
 
+var Rot0 = new Array(3);
+var Rot1 = new Array(3);
+var Rot2 = new Array(3);
+var Rot =[Rot0, Rot1, Rot2];    // 3x3 rotation matrix
+
 var a_star = new Array(3);
 var b_star = new Array(3);
 var c_star = new Array(3);
 
-a_star[0]=1.0;
-a_star[1]=0.0;
-a_star[2]=0.0;
-
-b_star[0]=0.0;
-b_star[1]=1.0;
-b_star[2]=0.0;
-
-c_star[0]=0.0;
-c_star[1]=0.0;
-c_star[2]=1.0;
+//a_star[0]=1.0;
+//a_star[1]=0.0;
+//a_star[2]=0.0;
+//b_star[0]=0.0;
+//b_star[1]=1.0;
+//b_star[2]=0.0;
+//c_star[0]=0.0;
+//c_star[1]=0.0;
+//c_star[2]=1.0;
 
 var Hmax;
 var Kmax;
@@ -57,19 +61,18 @@ function draw() {
     document.getElementById("verNum").innerHTML=version;
     document.getElementById("verNum2").innerHTML=version;
 
-
-    //set_Lattice();
     set_Lattice();
     draw_DetMap();
 
+    
 }
 
 function set_Lattice(){
 
     //input parameters: lattice constants and sample orientation)
     a = Number(document.getElementById('a').value);
-    b = Number(document.getElementById('a').value);
-    c = Number(document.getElementById('a').value);
+    b = Number(document.getElementById('b').value);
+    c = Number(document.getElementById('c').value);
     alpha = Number(document.getElementById('alpha').value)/180.0*Math.PI;   // in radian
     beta  = Number(document.getElementById('beta').value)/180.0*Math.PI;    // in radian
     gamma = Number(document.getElementById('gamma').value)/180.0*Math.PI;   // in radian
@@ -94,11 +97,29 @@ function set_Lattice(){
     let uy2uz2 = ux[1]**2.0+ux[2]**2.0;    
     let Uabs = Math.sqrt(ux[0]**2.0+uy2uz2);
 
-    let Rvy =(-vx[0]*ux[1]+(vx[1]*(ux[0]*ux[1]**2.0+Ubas*ux[2]**2.0)+vx[2]*ux[1]*ux[2]*(ux[0]-Ubas))/uy2uz2)/Uabs;
-    let Rvz =(-vx[0]*ux[2]+(vx[2]*(ux[0]*ux[2]**2.0+Ubas*ux[1]**2.0)+vx[1]*ux[2]*ux[1]*(ux[0]-Ubas))/uy2uz2)/Uabs;
+    let Rvy =(-vx[0]*ux[1]+(vx[1]*(ux[0]*ux[1]**2.0+Uabs*ux[2]**2.0)+vx[2]*ux[1]*ux[2]*(ux[0]-Uabs))/uy2uz2)/Uabs;
+    let Rvz =(-vx[0]*ux[2]+(vx[2]*(ux[0]*ux[2]**2.0+Uabs*ux[1]**2.0)+vx[1]*ux[2]*ux[1]*(ux[0]-Uabs))/uy2uz2)/Uabs;
 
     let cosphi=Rvy/Math.sqrt(Rvy**2.0+Rvz**2.0);
     let sinphi=Rvz/Math.sqrt(Rvy**2.0+Rvz**2.0);
+
+    Rot[0][0]= ux/Uabs;
+    Rot[0][1]= uy/Uabs;
+    Rot[0][2]= uz/Uabs;
+    Rot[1][0]= -(uy*cosphi+uz*sinphi)/Uabs;
+    Rot[1][1]=(uz*(uz*cosphi-uy*sinphi)+ux*uy*(uy*cosphi+uz*sinphi)/Uabs)/uy2uz2;
+    Rot[1][2]=(uy*(uy*sinphi-uz*cosphi)+ux*uz*(uz*sinphi+uy*cosphi)/Uabs)/uy2uz2;
+    Rot[2][0]= (uy*sinphi-uz*cosphi)/Uabs;
+    Rot[2][1]=(-uz*(uy*cosphi+uz*sinphi)+ux*uy*(uz*cosphi-uy*sinphi)/Uabs)/uy2uz2;
+    Rot[2][2]=(uy*(uy*cosphi+uz*sinphi)+ux*uz*(uz*cosphi-uy*sinphi)/Uabs)/uy2uz2;
+
+    // output parameters: 3 reciprocal lattice vectors a*, b*, and c*
+    for (let i=0;i<3;i+=1){
+        a_star[i]= a*Rot[i][0];
+        b_star[i]= b*(Rot[i][0]*Math.cos(gamma)+Rot[i][1]*Math.sin(gamma));
+        c_star[i]= c*(Rot[i][0]*Math.cos(beta)+Rot[i][1]*DD+Rot[i][2]*PP);
+       
+    }   
 
 
 
@@ -173,8 +194,7 @@ function draw_DetMap(){
 
     context.font = "italic 13px sans-serif";
     //context.fillText(Ghkl[2], X0, Y0+length1);
-    //context.fillText(alpha, X0, Y0+length1);
-    // console.log("Hallo")
+    //context.fillText(a_star[1], X0, Y0+length1);
     //context.font = "italic 10px sans-serif";
     //context.fillText(Ghkl[2], X0, Y0+length1);
 
