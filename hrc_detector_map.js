@@ -1,9 +1,10 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
 
-//2020/6/24,  define 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
-//2020/6/18-19,  introduce lattice constants and sample orientation 
-//2020/6/5
-var version = "0.2";
+// 2020/6/25, corrected ux[i]s and expression of reciprocal lattice vectors
+// 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
+// 2020/6/18-19,  introduced lattice constants and sample orientation 
+// 2020/6/5
+var version = "0.2.1";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 
@@ -17,8 +18,8 @@ var HD = 40;    // height of center of PSD from incident beam
 var LD = 2800;  // length of PSD
 var L20 = 4000; // distance from sample to PSD in horizontal plane
 
-var u = new Array(3);
-var v = new Array(3);
+var u = new Array(3); // indices, pallarel to the incident beam
+var v = new Array(3); // indices, another direction in the horizontal plane including the incidnet beam
 
 var ux = new Array(3);
 var vx = new Array(3);
@@ -28,6 +29,12 @@ var Rot1 = new Array(3);
 var Rot2 = new Array(3);
 var Rot =[Rot0, Rot1, Rot2];    // 3x3 rotation matrix
 
+// unit vector of primitive translation vectors
+var a_unit = new Array(3);
+var b_unit = new Array(3);
+var c_unit = new Array(3);
+
+// reciprocal lattice vectors
 var a_star = new Array(3);
 var b_star = new Array(3);
 var c_star = new Array(3);
@@ -103,9 +110,9 @@ function set_Lattice(){
     let cosphi=Rvy/Math.sqrt(Rvy**2.0+Rvz**2.0);
     let sinphi=Rvz/Math.sqrt(Rvy**2.0+Rvz**2.0);
 
-    Rot[0][0]= ux/Uabs;
-    Rot[0][1]= uy/Uabs;
-    Rot[0][2]= uz/Uabs;
+    Rot[0][0]= ux[0]/Uabs;
+    Rot[0][1]= ux[1]/Uabs;
+    Rot[0][2]= ux[2]/Uabs;
     Rot[1][0]= -(uy*cosphi+uz*sinphi)/Uabs;
     Rot[1][1]=(uz*(uz*cosphi-uy*sinphi)+ux*uy*(uy*cosphi+uz*sinphi)/Uabs)/uy2uz2;
     Rot[1][2]=(uy*(uy*sinphi-uz*cosphi)+ux*uz*(uz*sinphi+uy*cosphi)/Uabs)/uy2uz2;
@@ -113,15 +120,18 @@ function set_Lattice(){
     Rot[2][1]=(-uz*(uy*cosphi+uz*sinphi)+ux*uy*(uz*cosphi-uy*sinphi)/Uabs)/uy2uz2;
     Rot[2][2]=(uy*(uy*cosphi+uz*sinphi)+ux*uz*(uz*cosphi-uy*sinphi)/Uabs)/uy2uz2;
 
-    // output parameters: 3 reciprocal lattice vectors a*, b*, and c*
-    for (let i=0;i<3;i+=1){
-        a_star[i]= a*Rot[i][0];
-        b_star[i]= b*(Rot[i][0]*Math.cos(gamma)+Rot[i][1]*Math.sin(gamma));
-        c_star[i]= c*(Rot[i][0]*Math.cos(beta)+Rot[i][1]*DD+Rot[i][2]*PP);
-       
+    for (let i=0;i<3;i++){
+        a_unit[i]= Rot[i][0];
+        b_unit[i]= Rot[i][0]*Math.cos(gamma)+Rot[i][1]*Math.sin(gamma);
+        c_unit[i]= Rot[i][0]*Math.cos(beta)+Rot[i][1]*DD+Rot[i][2]*PP;
     }   
 
-
+    // output parameters: 3 recprocal lattice vectors, a*, b*, and c*
+    for (let i=0;i<3;i++){
+        a_star[i]= 2.0*Math.PI/a/PP/Math.sin(gamma)*(b_unit[(i+1)%3]*c_unit[(i+2)%3]-b_unit[(i+2)%3]*c_unit[(i+1)%3]);
+        b_star[i]= 2.0*Math.PI/b/PP/Math.sin(gamma)*(c_unit[(i+1)%3]*a_unit[(i+2)%3]-c_unit[(i+2)%3]*a_unit[(i+1)%3]);
+        c_star[i]= 2.0*Math.PI/c/PP/Math.sin(gamma)*(a_unit[(i+1)%3]*b_unit[(i+2)%3]-a_unit[(i+2)%3]*b_unit[(i+1)%3]);
+    }
 
 }
 
@@ -161,12 +171,12 @@ function draw_DetMap(){
 
                 }
                 else{
-                    for(let i=0;i<3;i+=1){
+                    for(let i=0;i<3;i++){
                         Ghkl[i]=H*a_star[i]+K*b_star[i]+L*c_star[i];
                     }
     
                     let G_len=0;        //calculate length of G
-                    for(let i=0;i<3;i+=1){
+                    for(let i=0;i<3;i++){
                         G_len=G_len+Ghkl[i]**2.0;
                     }
                     G_len=Math.sqrt(G_len);
