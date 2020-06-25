@@ -4,7 +4,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.2.1";
+var version = "0.2.2";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 
@@ -113,12 +113,12 @@ function set_Lattice(){
     Rot[0][0]= ux[0]/Uabs;
     Rot[0][1]= ux[1]/Uabs;
     Rot[0][2]= ux[2]/Uabs;
-    Rot[1][0]= -(uy*cosphi+uz*sinphi)/Uabs;
-    Rot[1][1]=(uz*(uz*cosphi-uy*sinphi)+ux*uy*(uy*cosphi+uz*sinphi)/Uabs)/uy2uz2;
-    Rot[1][2]=(uy*(uy*sinphi-uz*cosphi)+ux*uz*(uz*sinphi+uy*cosphi)/Uabs)/uy2uz2;
-    Rot[2][0]= (uy*sinphi-uz*cosphi)/Uabs;
-    Rot[2][1]=(-uz*(uy*cosphi+uz*sinphi)+ux*uy*(uz*cosphi-uy*sinphi)/Uabs)/uy2uz2;
-    Rot[2][2]=(uy*(uy*cosphi+uz*sinphi)+ux*uz*(uz*cosphi-uy*sinphi)/Uabs)/uy2uz2;
+    Rot[1][0]= -(ux[1]*cosphi+ux[2]*sinphi)/Uabs;
+    Rot[1][1]=(ux[2]*(ux[2]*cosphi-ux[1]*sinphi)+ux[0]*ux[1]*(ux[1]*cosphi+ux[2]*sinphi)/Uabs)/uy2uz2;
+    Rot[1][2]=(ux[1]*(ux[1]*sinphi-ux[2]*cosphi)+ux[0]*ux[2]*(ux[2]*sinphi+ux[1]*cosphi)/Uabs)/uy2uz2;
+    Rot[2][0]=(ux[1]*sinphi-ux[2]*cosphi)/Uabs;
+    Rot[2][1]=(-ux[2]*(ux[1]*cosphi+ux[2]*sinphi)+ux[0]*ux[1]*(ux[2]*cosphi-ux[1]*sinphi)/Uabs)/uy2uz2;
+    Rot[2][2]=(ux[1]*(ux[1]*cosphi+ux[2]*sinphi)+ux[0]*ux[2]*(ux[2]*cosphi-ux[1]*sinphi)/Uabs)/uy2uz2;
 
     for (let i=0;i<3;i++){
         a_unit[i]= Rot[i][0];
@@ -173,6 +173,8 @@ function draw_DetMap(){
                 else{
                     for(let i=0;i<3;i++){
                         Ghkl[i]=H*a_star[i]+K*b_star[i]+L*c_star[i];
+                        //Ghkl[i]=H*a_unit[i]+K*b_unit[i]+L*c_unit[i];
+                        
                     }
     
                     let G_len=0;        //calculate length of G
