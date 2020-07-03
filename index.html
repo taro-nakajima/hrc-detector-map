@@ -44,11 +44,17 @@
                 <i>H</i><sub>max</sub> = <input size="10" id="Hmax" value="3"> <br />
                 <i>K</i><sub>max</sub> = <input size="10" id="Kmax" value="3"> <br />
                 <i>L</i><sub>max</sub> = <input size="10" id="Lmax" value="3"> <br />
-                <input type="button" value="   set   " onclick="draw()"/>
+                <input type="button" value="   set   " onclick="draw()"/><br />
+                <br />
+                <input size="5" id="rot_x_deg" value="1"> <input type="button" value="  rotate x+  " id="rot_x_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate x-  " id="rot_x_minus" onclick="rot_and_draw(this.id)" /><br />
+                <input size="5" id="rot_y_deg" value="1"> <input type="button" value="  rotate y+  " id="rot_y_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate y-  " id="rot_y_minus" onclick="rot_and_draw(this.id)" /><br />
+                <input size="5" id="rot_z_deg" value="1"> <input type="button" value="  rotate z+  " id="rot_z_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate z-  " id="rot_z_minus" onclick="rot_and_draw(this.id)" /><br />
+
 
             </td>
-            </tr>
-    </table>
+        </tr>
+</table>
+<br />
 
 
 <div class="footer"> Version <font id="verNum2"></font> by D. Kawana and T. Nakajima</a>, 2020.</div>

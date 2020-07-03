@@ -70,8 +70,12 @@ function draw() {
 
     set_Lattice();
     draw_DetMap();
+ 
+}
 
-    
+function rot_and_draw(rot_ax_dir) {
+    rot_Lattice(rot_ax_dir);
+    draw_DetMap();
 }
 
 function set_Lattice(){
@@ -213,3 +217,52 @@ function draw_DetMap(){
 
 }
 
+function rot_Lattice(rot_ax_dir){
+    let deg = 0.0;
+    switch(rot_ax_dir){
+        case 'rot_x_plus':
+            deg = Number(document.getElementById('rot_x_deg').value);
+            x_rotation(deg);
+            break;
+        case 'rot_x_minus':
+            deg = (-1.0)*Number(document.getElementById('rot_x_deg').value);
+            x_rotation(deg);
+            break;
+        case 'rot_y_plus':
+            deg = Number(document.getElementById('rot_y_deg').value);
+            y_rotation(deg);
+            break;
+        case 'rot_y_minus':
+            deg = (-1.0)*Number(document.getElementById('rot_y_deg').value);
+            y_rotation(deg);
+            break;
+        case 'rot_z_plus':
+            deg = Number(document.getElementById('rot_z_deg').value);
+            z_rotation(deg);
+            break;
+        case 'rot_z_minus':
+            deg = (-1.0)*Number(document.getElementById('rot_z_deg').value);
+            z_rotation(deg);
+            break;
+        default:
+
+    }
+}
+
+function x_rotation(deg){
+
+    c_star[2]=c_star[2]+deg;   // This is a dummy function.
+
+}
+
+function y_rotation(deg){
+
+    c_star[2]=c_star[2]-deg;   // This is a dummy function.
+
+}
+
+function z_rotation(deg){
+
+    c_star[2]=c_star[2]*deg;   // This is a dummy function.
+
+}
