@@ -1,5 +1,6 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
 
+// 2020/7/7, resolved uy2uz2 division by zero
 // 2020/6/25, corrected ux[i]s and expression of reciprocal lattice vectors
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
@@ -63,14 +64,13 @@ var maxphiv = 60.0;
 var scaleX=800;
 var scaleY=500;
 
-
 function draw() {
     document.getElementById("verNum").innerHTML=version;
     document.getElementById("verNum2").innerHTML=version;
 
     set_Lattice();
     draw_DetMap();
- 
+
 }
 
 function rot_and_draw(rot_ax_dir) {
@@ -107,10 +107,17 @@ function set_Lattice(){
 
     let uy2uz2 = ux[1]**2.0+ux[2]**2.0;    
     let Uabs = Math.sqrt(ux[0]**2.0+uy2uz2);
-
-    let Rvy =(-vx[0]*ux[1]+(vx[1]*(ux[0]*ux[1]**2.0+Uabs*ux[2]**2.0)+vx[2]*ux[1]*ux[2]*(ux[0]-Uabs))/uy2uz2)/Uabs;
-    let Rvz =(-vx[0]*ux[2]+(vx[2]*(ux[0]*ux[2]**2.0+Uabs*ux[1]**2.0)+vx[1]*ux[2]*ux[1]*(ux[0]-Uabs))/uy2uz2)/Uabs;
-
+    let Rvy;
+    let Rvz;
+    if(uy2uz2==0){
+        Rvy=vx[1];
+        Rvz=vx[2];
+    }
+    else{
+        Rvy =(-vx[0]*ux[1]+(vx[1]*(ux[0]*ux[1]**2.0+Uabs*ux[2]**2.0)+vx[2]*ux[1]*ux[2]*(ux[0]-Uabs))/uy2uz2)/Uabs;
+        Rvz =(-vx[0]*ux[2]+(vx[2]*(ux[0]*ux[2]**2.0+Uabs*ux[1]**2.0)+vx[1]*ux[2]*ux[1]*(ux[0]-Uabs))/uy2uz2)/Uabs;
+    }
+    
     let cosphi=Rvy/Math.sqrt(Rvy**2.0+Rvz**2.0);
     let sinphi=Rvz/Math.sqrt(Rvy**2.0+Rvz**2.0);
 
@@ -130,7 +137,7 @@ function set_Lattice(){
         c_unit[i]= Rot[i][0]*Math.cos(beta)+Rot[i][1]*DD+Rot[i][2]*PP;
     }   
 
-    // output parameters: 3 recprocal lattice vectors, a*, b*, and c*
+    // output parameters: 3 reciprocal lattice vectors, a*, b*, and c*
     for (let i=0;i<3;i++){
         a_star[i]= 2.0*Math.PI/a/PP/Math.sin(gamma)*(b_unit[(i+1)%3]*c_unit[(i+2)%3]-b_unit[(i+2)%3]*c_unit[(i+1)%3]);
         b_star[i]= 2.0*Math.PI/b/PP/Math.sin(gamma)*(c_unit[(i+1)%3]*a_unit[(i+2)%3]-c_unit[(i+2)%3]*a_unit[(i+1)%3]);
@@ -206,14 +213,14 @@ function draw_DetMap(){
         }
     }
 
+
     //text for debug
 
     context.font = "italic 13px sans-serif";
-    //context.fillText(Ghkl[2], X0, Y0+length1);
-    //context.fillText(a_star[1], X0, Y0+length1);
-    //context.font = "italic 10px sans-serif";
-    //context.fillText(Ghkl[2], X0, Y0+length1);
-
+    context.fillText(cosphi, X0, Y0+length1);
+    //context.fillText(cosphi), X0, Y0+length1);
+    //context.fillText(sinphi), X0, Y0+length1+100);
+ 
 
 }
 
