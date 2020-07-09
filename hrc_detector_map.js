@@ -1,11 +1,12 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
 
+// 2020/7/9, introduced x,y, and z-axes rotation
 // 2020/7/7, resolved uy2uz2 division by zero
 // 2020/6/25, corrected ux[i]s and expression of reciprocal lattice vectors
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.2.2";
+var version = "0.3";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 
@@ -40,15 +41,8 @@ var a_star = new Array(3);
 var b_star = new Array(3);
 var c_star = new Array(3);
 
-//a_star[0]=1.0;
-//a_star[1]=0.0;
-//a_star[2]=0.0;
-//b_star[0]=0.0;
-//b_star[1]=1.0;
-//b_star[2]=0.0;
-//c_star[0]=0.0;
-//c_star[1]=0.0;
-//c_star[2]=1.0;
+var r00;
+var r01;
 
 var Hmax;
 var Kmax;
@@ -135,7 +129,7 @@ function set_Lattice(){
         a_unit[i]= Rot[i][0];
         b_unit[i]= Rot[i][0]*Math.cos(gamma)+Rot[i][1]*Math.sin(gamma);
         c_unit[i]= Rot[i][0]*Math.cos(beta)+Rot[i][1]*DD+Rot[i][2]*PP;
-    }   
+    } 
 
     // output parameters: 3 reciprocal lattice vectors, a*, b*, and c*
     for (let i=0;i<3;i++){
@@ -226,50 +220,48 @@ function draw_DetMap(){
 
 function rot_Lattice(rot_ax_dir){
     let deg = 0.0;
+    let xyz         // xyz=(0,1,2) for (x, y, z)-axis respectively.
     switch(rot_ax_dir){
         case 'rot_x_plus':
-            deg = Number(document.getElementById('rot_x_deg').value);
-            x_rotation(deg);
+            deg = Number(document.getElementById('rot_x_deg').value)/180.0*Math.PI;
+            xyz =0.0;
             break;
         case 'rot_x_minus':
-            deg = (-1.0)*Number(document.getElementById('rot_x_deg').value);
-            x_rotation(deg);
+            deg = (-1.0)*Number(document.getElementById('rot_x_deg').value)/180.0*Math.PI;
+            xyz =0.0;
             break;
         case 'rot_y_plus':
-            deg = Number(document.getElementById('rot_y_deg').value);
-            y_rotation(deg);
+            deg = Number(document.getElementById('rot_y_deg').value)/180.0*Math.PI;
+            xyz =1.0;
             break;
         case 'rot_y_minus':
-            deg = (-1.0)*Number(document.getElementById('rot_y_deg').value);
-            y_rotation(deg);
+            deg = (-1.0)*Number(document.getElementById('rot_y_deg').value)/180.0*Math.PI;
+            xyz =1.0;
             break;
         case 'rot_z_plus':
-            deg = Number(document.getElementById('rot_z_deg').value);
-            z_rotation(deg);
+            deg = Number(document.getElementById('rot_z_deg').value)/180.0*Math.PI;
+            xyz =2.0;
             break;
         case 'rot_z_minus':
-            deg = (-1.0)*Number(document.getElementById('rot_z_deg').value);
-            z_rotation(deg);
+            deg = (-1.0)*Number(document.getElementById('rot_z_deg').value)/180.0*Math.PI;
+            xyz =2.0;
             break;
         default:
-
     }
+    xyz_rotation(xyz,deg);
 }
 
-function x_rotation(deg){
-
-    c_star[2]=c_star[2]+deg;   // This is a dummy function.
-
-}
-
-function y_rotation(deg){
-
-    c_star[2]=c_star[2]-deg;   // This is a dummy function.
-
-}
-
-function z_rotation(deg){
-
-    c_star[2]=c_star[2]*deg;   // This is a dummy function.
-
+function xyz_rotation(xyz,deg){
+    r00=a_star[(xyz+1)%3]*Math.cos(deg)-a_star[(xyz+2)%3]*Math.sin(deg);
+    r01=a_star[(xyz+1)%3]*Math.sin(deg)+a_star[(xyz+2)%3]*Math.cos(deg);
+    a_star[(xyz+1)%3]=r00;
+    a_star[(xyz+2)%3]=r01;
+    r00=b_star[(xyz+1)%3]*Math.cos(deg)-b_star[(xyz+2)%3]*Math.sin(deg);
+    r01=b_star[(xyz+1)%3]*Math.sin(deg)+b_star[(xyz+2)%3]*Math.cos(deg);
+    b_star[(xyz+1)%3]=r00;
+    b_star[(xyz+2)%3]=r01;
+    r00=c_star[(xyz+1)%3]*Math.cos(deg)-c_star[(xyz+2)%3]*Math.sin(deg);
+    r01=c_star[(xyz+1)%3]*Math.sin(deg)+c_star[(xyz+2)%3]*Math.cos(deg);
+    c_star[(xyz+1)%3]=r00;
+    c_star[(xyz+2)%3]=r01;
 }
