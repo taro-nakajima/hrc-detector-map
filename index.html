@@ -2,6 +2,8 @@
 <title >Neutron Laue Pattern Simulator of HRC(BL12)</title>
 <link rel="stylesheet" type="text/css" href="./common.css">
 <script type="text/javascript" src="./hrc_detector_map.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+<!--script src="./three_test.js"></script-->
 <meta charset="UTF-8">
 </head>
 <body onload="draw()">
@@ -55,6 +57,21 @@
         </tr>
 </table>
 <br />
+<table>
+    <tr>
+        <td>
+            <canvas id="OrientationViewer"></canvas>
+        </td>
+        <td width=50>
+        </td>
+        <td valign="top">
+            <font color="red">a* &rarr;</font><br />
+            <font color="green">b* &rarr;</font><br />
+            <font color="blue">c* &rarr;</font><br />
+
+        </td>
+    </tr>
+</table>
 
 
 <div class="footer"> Version <font id="verNum2"></font> by D. Kawana and T. Nakajima</a>, 2020.</div>
