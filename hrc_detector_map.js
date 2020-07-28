@@ -1,12 +1,13 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
 
+// 2020/7/28, redefined phiv and phih using Math.atan2
 // 2020/7/9, introduced x,y, and z-axes rotation
 // 2020/7/7, resolved uy2uz2 division by zero
 // 2020/6/25, corrected ux[i]s and expression of reciprocal lattice vectors
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.3";
+var version = "0.32";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 
@@ -182,6 +183,87 @@ function draw_DetMap(){
                         
                     }
     
+                    //let G_len=0;        //calculate length of G
+                    //for(let i=0;i<3;i++){
+                    //    G_len=G_len+Ghkl[i]**2.0;
+                    //}
+                    //G_len=Math.sqrt(G_len);
+                 
+                    //let sinphiv=Ghkl[2]/G_len;
+                    //let phiv = Math.asin(sinphiv);      // in radian
+                    let phiv = Math.atan2(Ghkl[2], Math.sqrt(Ghkl[0]**2.0+Ghkl[1]**2));
+                    //let sinphih=Ghkl[1]/(G_len*Math.cos(phiv));
+                    //let phih=  Math.asin(sinphih);      // in radian
+                    let phih = Math.atan2(Ghkl[1],Ghkl[0]);
+
+                    //let cos2th=Ghkl[0]/G_len;
+                    //let twotheta= Math.acos(cos2th);   //in radidan
+
+                    let PosX=scaleX*phih/Math.PI*180.0/maxphih+X0;
+                    //let PosY=scaleY*phiv/Math.PI*180.0/maxphiv+Y0;
+                    let PosY=scaleY*(HD+LD/2-L20*Math.tan(phiv))/LD
+
+                    context.beginPath();
+                    context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
+                    context.stroke();    
+                }
+            }
+        }
+    }
+
+
+    //text for debug
+
+    context.font = "italic 13px sans-serif";
+    context.fillText(cosphi, X0, Y0+length1);
+    //context.fillText(cosphi), X0, Y0+length1);
+    //context.fillText(sinphi), X0, Y0+length1+100);
+ 
+
+}
+
+function draw_DetMap0(){
+
+    var canvas = document.getElementById('CanvasDetMap');
+    var context = canvas.getContext('2d');
+
+    //refresh
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.strokeStyle = "rgb(0, 0, 0)";
+    context.lineWidth=1;
+
+    Hmax = Number(document.getElementById('Hmax').value);
+    Kmax = Number(document.getElementById('Kmax').value);
+    Lmax = Number(document.getElementById('Lmax').value);
+
+    // line
+    context.strokeStyle = "rgb(255, 0, 0)";
+    context.beginPath();
+    context.moveTo(X0, Y0);
+    context.lineTo(X0+length1, Y0);
+    context.stroke();
+
+    // circle
+    context.strokeStyle = "rgb(0, 150, 0)";
+    var delta=20;
+    var limit=5;
+
+    var temp2=0;
+    var Ghkl=new Array(3);
+    for (var H=0;H<=Hmax;H+=1){
+        for (var K=0;K<=Kmax;K+=1){
+            for (var L=0;L<=Lmax;L+=1){
+
+                if((H==0)&&(K==0)&&(L==0)){
+
+                }
+                else{
+                    for(let i=0;i<3;i++){
+                        Ghkl[i]=H*a_star[i]+K*b_star[i]+L*c_star[i];
+                        //Ghkl[i]=H*a_unit[i]+K*b_unit[i]+L*c_unit[i];
+                        
+                    }
+    
                     let G_len=0;        //calculate length of G
                     for(let i=0;i<3;i++){
                         G_len=G_len+Ghkl[i]**2.0;
@@ -217,6 +299,8 @@ function draw_DetMap(){
  
 
 }
+
+
 
 function rot_Lattice(rot_ax_dir){
     let deg = 0.0;
