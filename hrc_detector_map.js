@@ -1,5 +1,6 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
 
+// 2020/8/3, changed G to Q=(Gx+Ki,Gy,Gz), but not verified
 // 2020/7/28, redefined phiv and phih using Math.atan2
 // 2020/7/9, introduced x,y, and z-axes rotation
 // 2020/7/7, resolved uy2uz2 division by zero
@@ -7,7 +8,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.4";
+var version = "0.4.1";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 
@@ -46,6 +47,7 @@ var Hmax;
 var Kmax;
 var Lmax;
 
+var lambda;             // wavelength for Q-vector
 var maxphih = 60.0;     // maximum of the phi angle on the horizontal plane
 //var maxphiv = 60.0;
 var scaleX=800;
@@ -180,32 +182,40 @@ function draw_DetMap(){
             for (var L=-Lmax;L<=Lmax;L+=1){
 
                 if((H==0)&&(K==0)&&(L==0)){
-
                 }
                 else{
                     for(let i=0;i<3;i++){
                         Ghkl[i]=H*a_star[i]+K*b_star[i]+L*c_star[i];
                     }
     
-                    let phiv = Math.atan2(Ghkl[2], Math.sqrt(Ghkl[0]**2.0+Ghkl[1]**2));
-                    let phih = Math.atan2(Ghkl[1],Ghkl[0]);
+                    if(Ghkl[0]==0.0){
+                    }
+                    else{
+                        let G_sq = Ghkl[0]**2.0+Ghkl[1]**2.0+Ghkl[2]**2.0;
+                        let Ki = Math.abs(0.5*G_sq/Ghkl[0]); // Ki >0
+                        lambda = 2.0*Math.PI/Ki;
+                        //lambda = Math.abs(4.0*Math.PI*Ghkl[0]/G_sq);
 
-                    let PosX=scaleX*phih/Math.PI*180.0/maxphih+X0;
-                    let PosY=scaleY*(HD+LD/2-L20*Math.tan(phiv))/LD
+                        let phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
+                        let phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
 
-                    context.beginPath();
-                    context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
-                    context.stroke();    
+                        let PosX=scaleX*phih/Math.PI*180.0/maxphih+X0;
+                        let PosY=scaleY*(HD+LD/2-L20*Math.tan(phiv))/LD
+
+                        context.beginPath();
+                        context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
+                        context.stroke();
+                    }  
                 }
             }
         }
     }
 
 
-    //text for debug
+//text for debug
 //    context.font = "italic 13px sans-serif";
 //    context.fillText(cosphi, X0, Y0);
- 
+
 
 }
 
