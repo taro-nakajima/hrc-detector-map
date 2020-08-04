@@ -8,7 +8,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.4.1";
+var version = "0.4.2";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 
@@ -188,11 +188,12 @@ function draw_DetMap(){
                         Ghkl[i]=H*a_star[i]+K*b_star[i]+L*c_star[i];
                     }
     
-                    if(Ghkl[0]==0.0){
+                    if(Ghkl[0]>=0.0){
+                        // Bragg's law is not satisfied.
                     }
                     else{
                         let G_sq = Ghkl[0]**2.0+Ghkl[1]**2.0+Ghkl[2]**2.0;
-                        let Ki = Math.abs(0.5*G_sq/Ghkl[0]); // Ki >0
+                        let Ki = -0.5*G_sq/Ghkl[0]; // Ki >0
                         lambda = 2.0*Math.PI/Ki;
                         //lambda = Math.abs(4.0*Math.PI*Ghkl[0]/G_sq);
 
