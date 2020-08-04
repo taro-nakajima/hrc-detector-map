@@ -1,5 +1,7 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
 
+// 2020/8/4, displayed indicies for debug
+// 2020/8/4, changed Ki to -|G|^2/Gx
 // 2020/8/3, changed G to Q=(Gx+Ki,Gy,Gz), but not verified
 // 2020/7/28, redefined phiv and phih using Math.atan2
 // 2020/7/9, introduced x,y, and z-axes rotation
@@ -8,7 +10,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.4.2";
+var version = "0.4.3";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 
@@ -206,20 +208,18 @@ function draw_DetMap(){
                         context.beginPath();
                         context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
                         context.stroke();
+
+                        context.fillText(String(H)+String(K)+String(L), PosX, PosY+15);
                     }  
                 }
             }
         }
     }
 
-
 //text for debug
 //    context.font = "italic 13px sans-serif";
-//    context.fillText(cosphi, X0, Y0);
-
-
+//context.fillText(lambda, X0, Y0);
 }
-
 
 
 
