@@ -63,6 +63,7 @@ var DetBankAngles=[12.25/180.0*Math.PI, 32.75/180.0*Math.PI, 53.2/180.0*Math.PI,
 var DetBankWidth=1300;  // width of the detector banks (mm)
 var DetBankScale=0.1;   // convert mm to pixel.
 
+context.font = "italic 13px sans-serif";
 
 function draw() {
     document.getElementById("verNum").innerHTML=version;
@@ -166,6 +167,7 @@ function draw_DetMap(){
     Kmax = Number(document.getElementById('Kmax').value);
     Lmax = Number(document.getElementById('Lmax').value);
 
+    
     // line
 //    context.strokeStyle = "rgb(255, 0, 0)";
 //    context.beginPath();
@@ -217,8 +219,8 @@ function draw_DetMap(){
     }
 
 //text for debug
-//    context.font = "italic 13px sans-serif";
-//context.fillText(lambda, X0, Y0);
+//  context.font = "italic 13px sans-serif";
+//  context.fillText(lambda, X0, Y0);
 }
 
 
