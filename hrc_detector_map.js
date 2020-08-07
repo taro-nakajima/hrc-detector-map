@@ -10,7 +10,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.4.3";
+var version = "0.4.4";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 
@@ -45,9 +45,11 @@ var a_star = new Array(3);
 var b_star = new Array(3);
 var c_star = new Array(3);
 
-var Hmax;
-var Kmax;
-var Lmax;
+var Hmax=3;
+var Kmax=3;
+var Lmax=3;
+
+var Ei_max = 600;
 
 var lambda;             // wavelength for Q-vector
 var maxphih = 60.0;     // maximum of the phi angle on the horizontal plane
@@ -63,7 +65,6 @@ var DetBankAngles=[12.25/180.0*Math.PI, 32.75/180.0*Math.PI, 53.2/180.0*Math.PI,
 var DetBankWidth=1300;  // width of the detector banks (mm)
 var DetBankScale=0.1;   // convert mm to pixel.
 
-context.font = "italic 13px sans-serif";
 
 function draw() {
     document.getElementById("verNum").innerHTML=version;
@@ -79,6 +80,13 @@ function rot_and_draw(rot_ax_dir) {
     rot_Lattice(rot_ax_dir);
     draw_DetMap();
     draw_OriViewer();
+}
+
+function Ei_max_adjust_and_draw(){
+    document.getElementById("Ei_max_disp").value = document.getElementById("Ei_max").value;
+    Ei_max = Number(document.getElementById("Ei_max").value);
+    draw_DetMap();
+
 }
 
 function set_Lattice(){
@@ -163,9 +171,6 @@ function draw_DetMap(){
     context.fillStyle = "rgb(0, 0, 100)";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    Hmax = Number(document.getElementById('Hmax').value);
-    Kmax = Number(document.getElementById('Kmax').value);
-    Lmax = Number(document.getElementById('Lmax').value);
 
     
     // line
@@ -198,21 +203,24 @@ function draw_DetMap(){
                     else{
                         let G_sq = Ghkl[0]**2.0+Ghkl[1]**2.0+Ghkl[2]**2.0;
                         let Ki = -0.5*G_sq/Ghkl[0]; // Ki >0
-                        lambda = 2.0*Math.PI/Ki;
+                        lambda = 2.0*Math.PI/Ki;    // Angstrome
                         //lambda = Math.abs(4.0*Math.PI*Ghkl[0]/G_sq);
 
-                        let phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
-                        let phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
+                        if(lambda > 2.0*Math.PI/Math.sqrt(Ei_max/2.072)){   // lambda_min=2PI/sqrt(Ei_max/2.072)
 
-                        let PosX=scaleX*phih/Math.PI*180.0/maxphih+X0;
-                        let PosY=scaleY*(HD+LD/2-L20*Math.tan(phiv))/LD
+                            let phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
+                            let phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
 
-                        context.beginPath();
-                        context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
-                        context.stroke();
+                            let PosX=scaleX*phih/Math.PI*180.0/maxphih+X0;
+                            let PosY=scaleY*(HD+LD/2-L20*Math.tan(phiv))/LD
 
-                        context.fillText(String(H)+String(K)+String(L), PosX, PosY+15);
-                    }  
+                            context.beginPath();
+                            context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
+                            context.stroke();
+
+                            context.fillText(String(H)+String(K)+String(L), PosX, PosY+15);
+                        }
+                   }  
                 }
             }
         }
