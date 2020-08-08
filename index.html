@@ -53,10 +53,14 @@
                 another direction in the beam horizontal plane: <br />
                 <b><i>v</i></b> = [<input size="6" id="v1" value="0">,<input size="6" id="v2" value="1">,<input size="6" id="v3" value="0">]<br />
                 <br />
-                Display (<i>H</i>,<i>K</i>,<i>L</i>)-range<br />
+
+                <div class="section_02">Incident Neutron Beam </div>
+                <i>E</i><sub>i</sub> max:<input type="range" value="500" min="10" max="1000" step="10" id="Ei_max" oninput="Ei_max_adjust_and_draw()"><input size="10" value="500" id="Ei_max_disp"> meV<br />
+
+                <!--Display (<i>H</i>,<i>K</i>,<i>L</i>)-range<br />
                 <i>H</i><sub>max</sub> = <input size="5" id="Hmax" value="3">,
                 <i>K</i><sub>max</sub> = <input size="5" id="Kmax" value="3">, 
-                <i>L</i><sub>max</sub> = <input size="5" id="Lmax" value="3"> <br />
+                <i>L</i><sub>max</sub> = <input size="5" id="Lmax" value="3"> <br /-->
                 <br />
                 <input type="button" value="   set   " onclick="draw()"/><br />
                 <br />
