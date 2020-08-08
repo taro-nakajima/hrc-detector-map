@@ -3,7 +3,6 @@
 <link rel="stylesheet" type="text/css" href="./common.css">
 <script type="text/javascript" src="./hrc_detector_map.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
-<!--script src="./three_test.js"></script-->
 <meta charset="UTF-8">
 </head>
 <body onload="draw()">
@@ -25,29 +24,47 @@
             <td>
                 <canvas id="CanvasDetMap" width="800" height="500" class="box"></canvas>
             </td>
-            <td width=100>
+            <td width=20>
             </td>
             <td>
-                Lattice Constants <br />
-                <i>a</i> = <input size="10" id="a" value="5"> &Aring; <br />
-                <i>b</i> = <input size="10" id="b" value="5"> &Aring; <br />
-                <i>c</i> = <input size="10" id="c" value="5"> &Aring; <br />
-                <i>&alpha;</i> = <input size="10" id="alpha" value="90"> deg. <br />
-                <i>&beta;</i> = <input size="10" id="beta" value="90"> deg. <br />
-                <i>&gamma;</i> = <input size="10" id="gamma" value="90"> deg.<br />
+                <div class="section_02">Crystal structure </div>
+                Lattice constants<br />
+                <i>a</i> = <input size="5" id="a" value="5"> &Aring;,
+                <i>b</i> = <input size="5" id="b" value="5"> &Aring;,
+                <i>c</i> = <input size="5" id="c" value="5"> &Aring;
                 <br />
-                Sample Orientation <br />
+                <i>&alpha;</i> = <input size="5" id="alpha" value="90"> deg., 
+                <i>&beta;</i> = <input size="5" id="beta" value="90"> deg.,
+                <i>&gamma;</i> = <input size="5" id="gamma" value="90"> deg.<br />  
+                Reflection condition: 
+                <select id="freq">
+                    <option value="none" selected>none</option>
+                    <option value="H+K=2n">H+K=2n</option>
+                    <option value="H+L=2n">H+L=2n</option>
+                    <option value="K+L=2n">K+L=2n</option>
+                    <option value="H+K+L=2n">H+K+L=2n</option>
+                    <option value="H,K,L all even or all odd">H,K,L all even or all odd</option>
+                    <option value="-H+K+L=3n">-H+K+L=3n</option>
+                </select><br />
+                <br />
+                <div class="section_02">Sample Orientation </div>
                 diraction parallel to incident beam: <br />
                 <b><i>u</i></b> = [<input size="6" id="u1" value="1">,<input size="6" id="u2" value="0">,<input size="6" id="u3" value="0">]<br />
                 another direction in the beam horizontal plane: <br />
                 <b><i>v</i></b> = [<input size="6" id="v1" value="0">,<input size="6" id="v2" value="1">,<input size="6" id="v3" value="0">]<br />
                 <br />
-                Display [<i>H</i>,<i>K</i>,<i>L</i>]-range<br />
-                <i>H</i><sub>max</sub> = <input size="10" id="Hmax" value="3"> <br />
-                <i>K</i><sub>max</sub> = <input size="10" id="Kmax" value="3"> <br />
-                <i>L</i><sub>max</sub> = <input size="10" id="Lmax" value="3"> <br />
+
+                <div class="section_02">Incident Neutron Beam </div>
+                <i>E</i><sub>i</sub> max:<input type="range" value="500" min="10" max="1000" step="10" id="Ei_max" oninput="Ei_max_adjust_and_draw()"><input size="10" value="500" id="Ei_max_disp"> meV<br />
+
+                <!--Display (<i>H</i>,<i>K</i>,<i>L</i>)-range<br />
+                <i>H</i><sub>max</sub> = <input size="5" id="Hmax" value="3">,
+                <i>K</i><sub>max</sub> = <input size="5" id="Kmax" value="3">, 
+                <i>L</i><sub>max</sub> = <input size="5" id="Lmax" value="3"> <br /-->
+                <br />
                 <input type="button" value="   set   " onclick="draw()"/><br />
                 <br />
+                <div class="section_02">Sample rotation</div>
                 <input size="5" id="rot_x_deg" value="1"> <input type="button" value="  rotate x+  " id="rot_x_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate x-  " id="rot_x_minus" onclick="rot_and_draw(this.id)" /><br />
                 <input size="5" id="rot_y_deg" value="1"> <input type="button" value="  rotate y+  " id="rot_y_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate y-  " id="rot_y_minus" onclick="rot_and_draw(this.id)" /><br />
                 <input size="5" id="rot_z_deg" value="1"> <input type="button" value="  rotate z+  " id="rot_z_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate z-  " id="rot_z_minus" onclick="rot_and_draw(this.id)" /><br />
@@ -60,7 +77,7 @@
 <table>
     <tr>
         <td>
-            <canvas id="OrientationViewer"></canvas>
+            <canvas id="OrientationViewer" class="box"></canvas>
         </td>
         <td width=50>
         </td>

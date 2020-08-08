@@ -1,32 +1,28 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
 
+// 2020/8/4, displayed indicies for debug
+// 2020/8/4, changed Ki to -|G|^2/Gx
+// 2020/8/3, changed G to Q=(Gx+Ki,Gy,Gz), but not verified
+// 2020/7/28, redefined phiv and phih using Math.atan2
 // 2020/7/9, introduced x,y, and z-axes rotation
 // 2020/7/7, resolved uy2uz2 division by zero
 // 2020/6/25, corrected ux[i]s and expression of reciprocal lattice vectors
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.31";
+var version = "0.4.4";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 
 var X0 = 0;
 var Y0 = 250;
+var length1=200;    //unused variable 
 
-var length1=200;
 var radius=5;
 
-var arrow_scale=150;
-var arrow_HeadLen=20;
-var arrow_HeadWidth=10;
-var DetBankAngles=[12.25/180.0*Math.PI, 32.75/180.0*Math.PI, 53.2/180.0*Math.PI, -21.8/180.0*Math.PI];   //radians
-var DetBankWidth=1300;  // mm
-var DetBankScale=0.1;
-
-
-var HD = 40;    // height of center of PSD from incident beam
-var LD = 2800;  // length of PSD
-var L20 = 4000; // distance from sample to PSD in horizontal plane
+var HD = 40;    // height of center of PSD from incident beam (mm)
+var LD = 2800;  // length of PSD (mm)
+var L20 = 4000; // distance from sample to PSD in horizontal plane (mm)
 
 var u = new Array(3); // indices, pallarel to the incident beam
 var v = new Array(3); // indices, another direction in the horizontal plane including the incidnet beam
@@ -49,22 +45,26 @@ var a_star = new Array(3);
 var b_star = new Array(3);
 var c_star = new Array(3);
 
-var r00;
-var r01;
+var Hmax=3;
+var Kmax=3;
+var Lmax=3;
 
-var Hmax;
-var Kmax;
-var Lmax;
+var Ei_max = 600;
 
-var maxphih = 60.0;
-var maxphiv = 60.0;
+var lambda;             // wavelength for Q-vector
+var maxphih = 60.0;     // maximum of the phi angle on the horizontal plane
+//var maxphiv = 60.0;
 var scaleX=800;
 var scaleY=500;
 
-var maxphih = 60.0;
-var maxphiv = 60.0;
-var scaleX=800;
-var scaleY=500;
+//variables for 3D orientation viewer
+var arrow_scale=150;        //arrows for a*, b* and c*: convert A-1 to pixel.
+var arrow_HeadLen=20;       //lengths of arrowheads (pixel)
+var arrow_HeadWidth=10;     //widths of arrowheads (pixel)
+var DetBankAngles=[12.25/180.0*Math.PI, 32.75/180.0*Math.PI, 53.2/180.0*Math.PI, -21.8/180.0*Math.PI];   //angles of the centers of the detector banks (rad)
+var DetBankWidth=1300;  // width of the detector banks (mm)
+var DetBankScale=0.1;   // convert mm to pixel.
+
 
 function draw() {
     document.getElementById("verNum").innerHTML=version;
@@ -72,14 +72,21 @@ function draw() {
 
     set_Lattice();
     draw_DetMap();
-    draw_THREE();
+    draw_OriViewer();
 
 }
 
 function rot_and_draw(rot_ax_dir) {
     rot_Lattice(rot_ax_dir);
     draw_DetMap();
-    draw_THREE();
+    draw_OriViewer();
+}
+
+function Ei_max_adjust_and_draw(){
+    document.getElementById("Ei_max_disp").value = document.getElementById("Ei_max").value;
+    Ei_max = Number(document.getElementById("Ei_max").value);
+    draw_DetMap();
+
 }
 
 function set_Lattice(){
@@ -160,73 +167,71 @@ function draw_DetMap(){
     context.strokeStyle = "rgb(0, 0, 0)";
     context.lineWidth=1;
 
-    Hmax = Number(document.getElementById('Hmax').value);
-    Kmax = Number(document.getElementById('Kmax').value);
-    Lmax = Number(document.getElementById('Lmax').value);
+    //set background color
+    context.fillStyle = "rgb(0, 0, 100)";
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
+
+    
     // line
-    context.strokeStyle = "rgb(255, 0, 0)";
-    context.beginPath();
-    context.moveTo(X0, Y0);
-    context.lineTo(X0+length1, Y0);
-    context.stroke();
+//    context.strokeStyle = "rgb(255, 0, 0)";
+//    context.beginPath();
+//    context.moveTo(X0, Y0);
+//    context.lineTo(X0+200, Y0);
+//    context.stroke();
 
-    // circle
-    context.strokeStyle = "rgb(0, 150, 0)";
-    var delta=20;
-    var limit=5;
+    // color setting for circles indicating reflections
+    context.strokeStyle = "rgb(250, 250, 0)";
+    context.fillStyle = "rgb(250, 250, 0)";
+    context.lineWidth=2;
 
-    var temp2=0;
     var Ghkl=new Array(3);
     for (var H=-Hmax;H<=Hmax;H+=1){
         for (var K=-Kmax;K<=Kmax;K+=1){
             for (var L=-Lmax;L<=Lmax;L+=1){
 
                 if((H==0)&&(K==0)&&(L==0)){
-
                 }
                 else{
                     for(let i=0;i<3;i++){
                         Ghkl[i]=H*a_star[i]+K*b_star[i]+L*c_star[i];
-                        //Ghkl[i]=H*a_unit[i]+K*b_unit[i]+L*c_unit[i];
-                        
                     }
     
-                    let G_len=0;        //calculate length of G
-                    for(let i=0;i<3;i++){
-                        G_len=G_len+Ghkl[i]**2.0;
+                    if(Ghkl[0]>=0.0){
+                        // Bragg's law is not satisfied.
                     }
-                    G_len=Math.sqrt(G_len);
-                 
-                    let sinphiv=Ghkl[2]/G_len;
-                    let phiv = Math.asin(sinphiv);      // in radian
-                    let sinphih=Ghkl[1]/(G_len*Math.cos(phiv));
-                    let phih=  Math.asin(sinphih);      // in radian
-                    //let cos2th=Ghkl[0]/G_len;
-                    //let twotheta= Math.acos(cos2th);   //in radidan
+                    else{
+                        let G_sq = Ghkl[0]**2.0+Ghkl[1]**2.0+Ghkl[2]**2.0;
+                        let Ki = -0.5*G_sq/Ghkl[0]; // Ki >0
+                        lambda = 2.0*Math.PI/Ki;    // Angstrome
+                        //lambda = Math.abs(4.0*Math.PI*Ghkl[0]/G_sq);
 
-                    let PosX=scaleX*phih/Math.PI*180.0/maxphih+X0;
-                    //let PosY=scaleY*phiv/Math.PI*180.0/maxphiv+Y0;
-                    let PosY=scaleY*(HD+LD/2-L20*Math.tan(phiv))/LD
+                        if(lambda > 2.0*Math.PI/Math.sqrt(Ei_max/2.072)){   // lambda_min=2PI/sqrt(Ei_max/2.072)
 
-                    context.beginPath();
-                    context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
-                    context.stroke();    
+                            let phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
+                            let phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
+
+                            let PosX=scaleX*phih/Math.PI*180.0/maxphih+X0;
+                            let PosY=scaleY*(HD+LD/2-L20*Math.tan(phiv))/LD
+
+                            context.beginPath();
+                            context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
+                            context.stroke();
+
+                            context.fillText(String(H)+String(K)+String(L), PosX, PosY+15);
+                        }
+                   }  
                 }
             }
         }
     }
 
-
-    //text for debug
-
-//    context.font = "italic 13px sans-serif";
-//    context.fillText(cosphi, X0, Y0+length1);
-    //context.fillText(cosphi), X0, Y0+length1);
-    //context.fillText(sinphi), X0, Y0+length1+100);
- 
-
+//text for debug
+//  context.font = "italic 13px sans-serif";
+//  context.fillText(lambda, X0, Y0);
 }
+
+
 
 function rot_Lattice(rot_ax_dir){
     let deg = 0.0;
@@ -262,6 +267,9 @@ function rot_Lattice(rot_ax_dir){
 }
 
 function xyz_rotation(xyz,deg){
+    let r00;
+    let r01;
+
     r00=a_star[(xyz+1)%3]*Math.cos(deg)-a_star[(xyz+2)%3]*Math.sin(deg);
     r01=a_star[(xyz+1)%3]*Math.sin(deg)+a_star[(xyz+2)%3]*Math.cos(deg);
     a_star[(xyz+1)%3]=r00;
@@ -276,108 +284,110 @@ function xyz_rotation(xyz,deg){
     c_star[(xyz+2)%3]=r01;
 }
 
-function draw_THREE(){
-  // サイズを指定
-  const width = 800;
-  const height = 400;
-
-  // レンダラーを作成
-  const renderer = new THREE.WebGLRenderer({
-    canvas: document.querySelector('#OrientationViewer'),
-    antialias: true
-  });
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(width, height);
-  renderer.setClearColor(0xf8f8f8);
-
-  // シーンを作成
-  const scene = new THREE.Scene();
-
-  // カメラを作成
-  const camera = new THREE.PerspectiveCamera(30, width / height);
-  camera.position.set(-800, 800, 800);
-  camera.lookAt(new THREE.Vector3(0, 0, 0));
-
-
-  // detector bank 1
-  const geometry1 = new THREE.BoxGeometry(50.0, LD*DetBankScale, DetBankWidth*DetBankScale);
-  const material1 = new THREE.MeshStandardMaterial({ color: 0xC0C0C0 });
-  const mesh1 = new THREE.Mesh(geometry1, material1);
-  scene.add(mesh1);
-  mesh1.rotation.y += DetBankAngles[0];
-  mesh1.position.x += L20*DetBankScale*Math.cos(DetBankAngles[0]);
-  mesh1.position.z -= L20*DetBankScale*Math.sin(DetBankAngles[0]);
-
-  // detector bank 3
-  const geometry2 = new THREE.BoxGeometry(50.0, LD*DetBankScale, DetBankWidth*DetBankScale);
-  const mesh2 = new THREE.Mesh(geometry2, material1);
-  scene.add(mesh2);
-  mesh2.rotation.y += DetBankAngles[1];
-  mesh2.position.x += L20*DetBankScale*Math.cos(DetBankAngles[1]);
-  mesh2.position.z -= L20*DetBankScale*Math.sin(DetBankAngles[1]);
-
-  // detector bank 3
-  const geometry3 = new THREE.BoxGeometry(50.0, LD*DetBankScale, DetBankWidth*DetBankScale);
-  const mesh3 = new THREE.Mesh(geometry3, material1);
-  scene.add(mesh3);
-  mesh3.rotation.y += DetBankAngles[2];
-  mesh3.position.x += L20*DetBankScale*Math.cos(DetBankAngles[2]);
-  mesh3.position.z -= L20*DetBankScale*Math.sin(DetBankAngles[2]);
-
-  // detector bank 4
-  const geometry4 = new THREE.BoxGeometry(50.0, LD*DetBankScale, DetBankWidth*DetBankScale);
-  const mesh4 = new THREE.Mesh(geometry4, material1);
-  scene.add(mesh4);
-  mesh4.rotation.y += DetBankAngles[3];
-  mesh4.position.x += L20*DetBankScale*Math.cos(DetBankAngles[3]);
-  mesh4.position.z -= L20*DetBankScale*Math.sin(DetBankAngles[3]);
-
-  // detector bank 4
-  const geometry5 = new THREE.BoxGeometry(2000,50,50);
-  const mesh5 = new THREE.Mesh(geometry5, material1);
-  scene.add(mesh5);
-  mesh5.position.x -= 1300;
+function draw_OriViewer(){
+    // サイズを指定
+    const width = 800;
+    const height = 400;
   
-  //draw a*, b*, c*
-  //note: HRC coordinates (x,y,z) -> THREE.js coordinates (x3,y3,z3) , x3=x, y3=z, z3=-y
-  var dir = new THREE.Vector3( a_star[0],a_star[2], -a_star[1] );
-  var origin = new THREE.Vector3( 0, 0, 0 );
-  var arrow_len = dir.length()*arrow_scale;
-  var hex = 0xff0000;
-  var arrowHelper = new THREE.ArrowHelper( dir.normalize(), origin, arrow_len, hex ,arrow_HeadLen,arrow_HeadWidth);
-  scene.add(arrowHelper);
-
-  var dir = new THREE.Vector3( b_star[0],b_star[2], -b_star[1] );
-  arrow_len = dir.length()*arrow_scale;
-  var hex = 0x00ff00;
-  arrowHelper = new THREE.ArrowHelper( dir.normalize(), origin, arrow_len, hex ,arrow_HeadLen,arrow_HeadWidth);
-  scene.add(arrowHelper);
-
-  var dir = new THREE.Vector3( c_star[0],c_star[2], -c_star[1] );
-  arrow_len = dir.length()*arrow_scale;
-  hex = 0x0000ff;
-  arrowHelper = new THREE.ArrowHelper( dir.normalize(), origin,arrow_len, hex ,arrow_HeadLen,arrow_HeadWidth);
-  scene.add(arrowHelper);
-
-
-  //mesh.rotation.y += 0.6;
-//  mesh.rotation.x += 0.6;
-  //  mesh.rotation.z += 0.6;
-
-  // 平行光源
-  const directionalLight = new THREE.DirectionalLight(0xffffff);
-  directionalLight.position.set(-150, 240, 500);
-  scene.add(directionalLight);
-
-  const light = new THREE.AmbientLight(0xffffff, 1.0);
-  scene.add(light);  
-  // ポイント光源
-//  const pointLight = new THREE.PointLight(0xffffff, 2, 1000);
-//  scene.add(pointLight);
-//  const pointLightHelper = new THREE.PointLightHelper(pointLight, 3);
-//  scene.add(pointLightHelper);
-
-  renderer.render(scene, camera);
-//  tick();
-
-}
+    // レンダラーを作成
+    const renderer = new THREE.WebGLRenderer({
+      canvas: document.querySelector('#OrientationViewer'),
+      antialias: true
+    });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(width, height);
+    renderer.setClearColor(0xf8f8f8);
+  
+    // シーンを作成
+    const scene = new THREE.Scene();
+  
+    // カメラを作成
+    const camera = new THREE.PerspectiveCamera(30, width / height);
+    camera.position.set(-800, 800, 800);
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
+  
+    //note: 
+    //HRC coordinates (x(||ki),y,z(vertical)) 
+    //THREE.js coordinates (x3,y3,z3) 
+    //transformation : x3=x, y3=z, z3=-y  
+    // detector bank 1
+    const geometry1 = new THREE.BoxGeometry(50.0, LD*DetBankScale, DetBankWidth*DetBankScale);
+    const material1 = new THREE.MeshStandardMaterial({ color: 0xC0C0C0 });  // color of detector bank
+    const mesh1 = new THREE.Mesh(geometry1, material1);
+    scene.add(mesh1);
+    mesh1.rotation.y += DetBankAngles[0];       //rotation about the y axis.
+    mesh1.position.x += L20*DetBankScale*Math.cos(DetBankAngles[0]);    // move along the x axis.
+    mesh1.position.z -= L20*DetBankScale*Math.sin(DetBankAngles[0]);    // move along the z axis.
+  
+    // detector bank 2
+    const geometry2 = new THREE.BoxGeometry(50.0, LD*DetBankScale, DetBankWidth*DetBankScale);
+    const mesh2 = new THREE.Mesh(geometry2, material1);
+    scene.add(mesh2);
+    mesh2.rotation.y += DetBankAngles[1];
+    mesh2.position.x += L20*DetBankScale*Math.cos(DetBankAngles[1]);
+    mesh2.position.z -= L20*DetBankScale*Math.sin(DetBankAngles[1]);
+  
+    // detector bank 3
+    const geometry3 = new THREE.BoxGeometry(50.0, LD*DetBankScale, DetBankWidth*DetBankScale);
+    const mesh3 = new THREE.Mesh(geometry3, material1);
+    scene.add(mesh3);
+    mesh3.rotation.y += DetBankAngles[2];
+    mesh3.position.x += L20*DetBankScale*Math.cos(DetBankAngles[2]);
+    mesh3.position.z -= L20*DetBankScale*Math.sin(DetBankAngles[2]);
+  
+    // detector bank 4
+    const geometry4 = new THREE.BoxGeometry(50.0, LD*DetBankScale, DetBankWidth*DetBankScale);
+    const mesh4 = new THREE.Mesh(geometry4, material1);
+    scene.add(mesh4);
+    mesh4.rotation.y += DetBankAngles[3];
+    mesh4.position.x += L20*DetBankScale*Math.cos(DetBankAngles[3]);
+    mesh4.position.z -= L20*DetBankScale*Math.sin(DetBankAngles[3]);
+  
+    // detector bank 4
+    const geometry5 = new THREE.BoxGeometry(2000,50,50);
+    const mesh5 = new THREE.Mesh(geometry5, material1);
+    scene.add(mesh5);
+    mesh5.position.x -= 1300;
+    
+    //draw a*, b*, c*
+    //a*
+    var dir = new THREE.Vector3( a_star[0],a_star[2], -a_star[1] );
+    var origin = new THREE.Vector3( 0, 0, 0 );
+    var arrow_len = dir.length()*arrow_scale;
+    var hex = 0xff0000;
+    var arrowHelper = new THREE.ArrowHelper( dir.normalize(), origin, arrow_len, hex ,arrow_HeadLen,arrow_HeadWidth);
+    scene.add(arrowHelper);
+  
+    //b*
+    dir = new THREE.Vector3( b_star[0],b_star[2], -b_star[1] );
+    arrow_len = dir.length()*arrow_scale;
+    hex = 0x00ff00;
+    arrowHelper = new THREE.ArrowHelper( dir.normalize(), origin, arrow_len, hex ,arrow_HeadLen,arrow_HeadWidth);
+    scene.add(arrowHelper);
+ 
+    //c*
+    dir = new THREE.Vector3( c_star[0],c_star[2], -c_star[1] );
+    arrow_len = dir.length()*arrow_scale;
+    hex = 0x0000ff;
+    arrowHelper = new THREE.ArrowHelper( dir.normalize(), origin,arrow_len, hex ,arrow_HeadLen,arrow_HeadWidth);
+    scene.add(arrowHelper);
+  
+  
+  
+    // 平行光源
+    const directionalLight = new THREE.DirectionalLight(0xffffff);
+    directionalLight.position.set(-150, 240, 500);
+    scene.add(directionalLight);
+  
+    const light = new THREE.AmbientLight(0xffffff, 1.0);
+    scene.add(light);  
+    // ポイント光源
+  //  const pointLight = new THREE.PointLight(0xffffff, 2, 1000);
+  //  scene.add(pointLight);
+  //  const pointLightHelper = new THREE.PointLightHelper(pointLight, 3);
+  //  scene.add(pointLightHelper);
+  
+    renderer.render(scene, camera);
+  //  tick();
+  
+  }
