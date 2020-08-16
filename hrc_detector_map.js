@@ -10,9 +10,10 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.4.4";
+var version = "0.4.5";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
+var decimal_digit=1000;     // decimal digit for UBmatrix
 
 var X0 = 0;
 var Y0 = 250;
@@ -65,12 +66,18 @@ var DetBankAngles=[12.25/180.0*Math.PI, 32.75/180.0*Math.PI, 53.2/180.0*Math.PI,
 var DetBankWidth=1300;  // width of the detector banks (mm)
 var DetBankScale=0.1;   // convert mm to pixel.
 
+//variable for loading observed Laue image.
+var imageLoaded=false;
+var imageURL;
+var image = new Image();
+
 
 function draw() {
     document.getElementById("verNum").innerHTML=version;
     document.getElementById("verNum2").innerHTML=version;
 
     set_Lattice();
+    showUBmatrix();
     draw_DetMap();
     draw_OriViewer();
 
@@ -78,6 +85,7 @@ function draw() {
 
 function rot_and_draw(rot_ax_dir) {
     rot_Lattice(rot_ax_dir);
+    showUBmatrix();
     draw_DetMap();
     draw_OriViewer();
 }
@@ -171,7 +179,9 @@ function draw_DetMap(){
     context.fillStyle = "rgb(0, 0, 100)";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-
+    if(imageLoaded==true){
+        context.drawImage(image, 0, 0);
+    }
     
     // line
 //    context.strokeStyle = "rgb(255, 0, 0)";
@@ -391,3 +401,35 @@ function draw_OriViewer(){
   //  tick();
   
   }
+
+function getFile(e){
+//    console.log(e[0]);  //for debug
+    let reader = new FileReader();
+    reader.readAsDataURL(e[0]);
+    reader.onload = function() {
+        imageLoaded=true;
+        image.src = reader.result;
+        image.onload=function() {
+            draw_DetMap();         
+        };
+    };
+}
+
+
+function removeFile(){
+    //    console.log(e[0]);  //for debug
+    imageLoaded=false;
+    draw_DetMap();         
+}
+
+function showUBmatrix(){
+    document.getElementById('as_x').value = Math.round((a_star[0]*decimal_digit))/decimal_digit;
+    document.getElementById('as_y').value = Math.round((a_star[1]*decimal_digit))/decimal_digit;
+    document.getElementById('as_z').value = Math.round((a_star[2]*decimal_digit))/decimal_digit;
+    document.getElementById('bs_x').value = Math.round((b_star[0]*decimal_digit))/decimal_digit;
+    document.getElementById('bs_y').value = Math.round((b_star[1]*decimal_digit))/decimal_digit;
+    document.getElementById('bs_z').value = Math.round((b_star[2]*decimal_digit))/decimal_digit;
+    document.getElementById('cs_x').value = Math.round((c_star[0]*decimal_digit))/decimal_digit;
+    document.getElementById('cs_y').value = Math.round((c_star[1]*decimal_digit))/decimal_digit;
+    document.getElementById('cs_z').value = Math.round((c_star[2]*decimal_digit))/decimal_digit;
+}
