@@ -22,13 +22,20 @@
 <table>
         <tr>
             <td>
-                <canvas id="CanvasDetMap" width="800" height="500" class="box"></canvas>
+                <div class="section_02">Detector map </div>
+                <canvas id="CanvasDetMap" width="800" height="500" class="box"></canvas><br />
+                <br />
+                <div class="section_02">Sample orientation viewer</div>
+                <canvas id="OrientationViewer" class="box"></canvas><br />
+                <font color="red">a* &rarr;</font>, <font color="green">b* &rarr;</font>, <font color="blue">c* &rarr;</font><br />
+    
             </td>
             <td width=20>
             </td>
-            <td>
-                <div class="section_02">Crystal structure </div>
-                Lattice constants<br />
+            <td valign="top">
+                <div class="box2">
+                <div class="section_02">Input parameters </div>
+                <b>Lattice constants</b><br />
                 <i>a</i> = <input size="5" id="a" value="5"> &Aring;,
                 <i>b</i> = <input size="5" id="b" value="5"> &Aring;,
                 <i>c</i> = <input size="5" id="c" value="5"> &Aring;
@@ -36,7 +43,8 @@
                 <i>&alpha;</i> = <input size="5" id="alpha" value="90"> deg., 
                 <i>&beta;</i> = <input size="5" id="beta" value="90"> deg.,
                 <i>&gamma;</i> = <input size="5" id="gamma" value="90"> deg.<br />  
-                Reflection condition: 
+                <br />
+                <b>Reflection condition</b><br />
                 <select id="freq">
                     <option value="none" selected>none</option>
                     <option value="H+K=2n">H+K=2n</option>
@@ -47,14 +55,15 @@
                     <option value="-H+K+L=3n">-H+K+L=3n</option>
                 </select><br />
                 <br />
-                <div class="section_02">Sample Orientation </div>
-                diraction parallel to incident beam: <br />
+
+                <b>Orientation </b><br />
                 <b><i>u</i></b> = [<input size="6" id="u1" value="1">,<input size="6" id="u2" value="0">,<input size="6" id="u3" value="0">]<br />
-                another direction in the beam horizontal plane: <br />
                 <b><i>v</i></b> = [<input size="6" id="v1" value="0">,<input size="6" id="v2" value="1">,<input size="6" id="v3" value="0">]<br />
+                (<b><i>u</i></b>: diraction parallel to incident beam. <br />
+                <b><i>v</i></b>: another direction in the beam horizontal plane.) <br />
                 <br />
 
-                <div class="section_02">Incident Neutron Beam </div>
+                <b>Incident Neutron Beam </b><br />
                 <i>E</i><sub>i</sub> max:<input type="range" value="500" min="10" max="1000" step="10" id="Ei_max" oninput="Ei_max_adjust_and_draw()"><input size="10" value="500" id="Ei_max_disp"> meV<br />
 
                 <!--Display (<i>H</i>,<i>K</i>,<i>L</i>)-range<br />
@@ -62,35 +71,76 @@
                 <i>K</i><sub>max</sub> = <input size="5" id="Kmax" value="3">, 
                 <i>L</i><sub>max</sub> = <input size="5" id="Lmax" value="3"> <br /-->
                 <br />
-                <input type="button" value="   set   " onclick="draw()"/><br />
-                <br />
-                <div class="section_02">Sample rotation</div>
-                <input size="5" id="rot_x_deg" value="1"> <input type="button" value="  rotate x+  " id="rot_x_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate x-  " id="rot_x_minus" onclick="rot_and_draw(this.id)" /><br />
-                <input size="5" id="rot_y_deg" value="1"> <input type="button" value="  rotate y+  " id="rot_y_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate y-  " id="rot_y_minus" onclick="rot_and_draw(this.id)" /><br />
-                <input size="5" id="rot_z_deg" value="1"> <input type="button" value="  rotate z+  " id="rot_z_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate z-  " id="rot_z_minus" onclick="rot_and_draw(this.id)" /><br />
+                <input type="button" value="   Set parameters  " onclick="draw()"/><br />
 
+                </div>
+
+                <div class="box2">
+                    <div class="section_02">Load observed Laue pattern </div>
+                    <input type="file" onchange="getFile(this.files)"><br />
+                    <input type="button" value="   Remove file  " onclick="removeFile()"/><br />
+                </div>
+
+                <div class="box2">
+                    <div class="section_02">Sample rotation </div>
+                    <input size="5" id="rot_x_deg" value="1"> deg. <input type="button" value="  rotate x+  " id="rot_x_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate x-  " id="rot_x_minus" onclick="rot_and_draw(this.id)" /><br />
+                    <input size="5" id="rot_y_deg" value="1"> deg. <input type="button" value="  rotate y+  " id="rot_y_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate y-  " id="rot_y_minus" onclick="rot_and_draw(this.id)" /><br />
+                    <input size="5" id="rot_z_deg" value="1"> deg. <input type="button" value="  rotate z+  " id="rot_z_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate z-  " id="rot_z_minus" onclick="rot_and_draw(this.id)" /><br />
+                </div>
+
+                <div class="box2">
+                    <div class="section_02">UB matrix </div>
+
+                    <table>
+                        <tr>
+                            <td>Qx</td>
+                            <td></td>
+                            <td>
+                                <input type="text" size="5" id="as_x">
+                            </td>
+                            <td>
+                                <input type="text" size="5" id="bs_x">
+                            </td>
+                            <td>
+                                <input type="text" size="5" id="cs_x">
+                            </td>
+                            <td>H</td>
+                        </tr>
+                        <tr>
+                            <td>Qy</td>
+                            <td>=</td>
+                            <td>
+                                <input type="text" size="5" id="as_y">
+                            </td>
+                            <td>
+                                <input type="text" size="5" id="bs_y">
+                            </td>
+                            <td>
+                                <input type="text" size="5" id="cs_y">
+                            </td>
+                            <td>K</td>
+                        </tr>
+                        <tr>
+                            <td>Qz</td>
+                            <td></td>
+                            <td>
+                                <input type="text" size="5" id="as_z">
+                            </td>
+                            <td>
+                                <input type="text" size="5" id="bs_z">
+                            </td>
+                            <td>
+                                <input type="text" size="5" id="cs_z">
+                            </td>
+                            <td>L</td>
+                        </tr>
+                    </table>
+                </div>
 
             </td>
         </tr>
 </table>
 <br />
-<table>
-    <tr>
-        <td>
-            <canvas id="OrientationViewer" class="box"></canvas>
-        </td>
-        <td width=50>
-        </td>
-        <td valign="top">
-            <font color="red">a* &rarr;</font><br />
-            <font color="green">b* &rarr;</font><br />
-            <font color="blue">c* &rarr;</font><br />
-
-        </td>
-    </tr>
-</table>
-
-
 
 <div class="footer"> Version <font id="verNum2"></font> by D. Kawana and T. Nakajima</a>, 2020.</div>
 </div> <!--end of mainbody-->
