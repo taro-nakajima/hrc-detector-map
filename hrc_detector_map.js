@@ -1,5 +1,6 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
 
+// 2020/8/17, changed Hmax, Kmax, and Lmax to indexMax defined using maximum of lattice constant
 // 2020/8/4, displayed indicies for debug
 // 2020/8/4, changed Ki to -|G|^2/Gx
 // 2020/8/3, changed G to Q=(Gx+Ki,Gy,Gz), but not verified
@@ -10,7 +11,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.4.5";
+var version = "0.4.6";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 var decimal_digit=1000;     // decimal digit for UBmatrix
@@ -46,9 +47,11 @@ var a_star = new Array(3);
 var b_star = new Array(3);
 var c_star = new Array(3);
 
-var Hmax=3;
-var Kmax=3;
-var Lmax=3;
+//var Hmax=10;
+//var Kmax=10;
+//var Lmax=10;
+var latMax;         //max of lattice constants a,b and c
+var indexMax;       //max of index for drawing detector map
 
 var Ei_max = 600;
 
@@ -78,7 +81,8 @@ function draw() {
 
     set_Lattice();
     showUBmatrix();
-    draw_DetMap();
+    Ei_max_adjust_and_draw();
+    //draw_DetMap();
     draw_OriViewer();
 
 }
@@ -86,7 +90,8 @@ function draw() {
 function rot_and_draw(rot_ax_dir) {
     rot_Lattice(rot_ax_dir);
     showUBmatrix();
-    draw_DetMap();
+    Ei_max_adjust_and_draw();
+    //draw_DetMap();
     draw_OriViewer();
 }
 
@@ -113,6 +118,7 @@ function set_Lattice(){
     v[1] = Number(document.getElementById('v2').value);
     v[2] = Number(document.getElementById('v3').value);
 
+    latMax= Math.max(a,b,c);
     // calculation
     let DD = (Math.cos(alpha)-Math.cos(gamma)*Math.cos(beta))/Math.sin(gamma);
     let PP = Math.sqrt(Math.sin(beta)-DD**2.0);
@@ -195,10 +201,16 @@ function draw_DetMap(){
     context.fillStyle = "rgb(250, 250, 0)";
     context.lineWidth=2;
 
+    indexMax= Math.floor(Math.sqrt(Ei_max/2.072)*latMax/4.0/Math.PI);
+    context.fillText(indexMax, 100, 100);   // display value for check
+
     var Ghkl=new Array(3);
-    for (var H=-Hmax;H<=Hmax;H+=1){
-        for (var K=-Kmax;K<=Kmax;K+=1){
-            for (var L=-Lmax;L<=Lmax;L+=1){
+    for (var H=-indexMax;H<=indexMax;H+=1){
+        for (var K=-indexMax;K<=indexMax;K+=1){
+            for (var L=-indexMax;L<=indexMax;L+=1){
+    //for (var H=-Hmax;H<=Hmax;H+=1){
+    //    for (var K=-Kmax;K<=Kmax;K+=1){
+    //        for (var L=-Lmax;L<=Lmax;L+=1){
 
                 if((H==0)&&(K==0)&&(L==0)){
                 }
