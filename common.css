@@ -70,8 +70,8 @@ body {
 }
 
 .section_02{
-	font-size		: 130%;
-	line-height		: 130%;
+	font-size		: 110%;
+	line-height		: 110%;
 	font-family: "Yu Gothic", sans-serif;
 	padding: 3px 10px 2px 10px;
 	margin: 5px 0px 10px 0px;
@@ -188,7 +188,7 @@ A:hover{
 	border-width     : 1px;
 	border-color     : #808080;
 	margin           : 5px;
-	padding          : 10px;
+	padding          : 0px;
 }
 
 .boxBLUE{
