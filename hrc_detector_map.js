@@ -1,5 +1,6 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
 
+// 2020/8/17, changed Hmax, Kmax, and Lmax to indexMax defined using maximum of lattice constant
 // 2020/8/4, displayed indicies for debug
 // 2020/8/4, changed Ki to -|G|^2/Gx
 // 2020/8/3, changed G to Q=(Gx+Ki,Gy,Gz), but not verified
@@ -10,9 +11,10 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.4.3";
+var version = "0.4.6";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
+var decimal_digit=1000;     // decimal digit for UBmatrix
 
 var X0 = 0;
 var Y0 = 250;
@@ -45,9 +47,13 @@ var a_star = new Array(3);
 var b_star = new Array(3);
 var c_star = new Array(3);
 
-var Hmax;
-var Kmax;
-var Lmax;
+//var Hmax=10;
+//var Kmax=10;
+//var Lmax=10;
+var latMax;         //max of lattice constants a,b and c
+var indexMax;       //max of index for drawing detector map
+
+var Ei_max = 600;
 
 var lambda;             // wavelength for Q-vector
 var maxphih = 60.0;     // maximum of the phi angle on the horizontal plane
@@ -63,33 +69,48 @@ var DetBankAngles=[12.25/180.0*Math.PI, 32.75/180.0*Math.PI, 53.2/180.0*Math.PI,
 var DetBankWidth=1300;  // width of the detector banks (mm)
 var DetBankScale=0.1;   // convert mm to pixel.
 
-context.font = "italic 13px sans-serif";
+//variable for loading observed Laue image.
+var imageLoaded=false;
+var imageURL;
+var image = new Image();
+
 
 function draw() {
     document.getElementById("verNum").innerHTML=version;
     document.getElementById("verNum2").innerHTML=version;
 
     set_Lattice();
-    draw_DetMap();
+    showUBmatrix();
+    Ei_max_adjust_and_draw();
+    //draw_DetMap();
     draw_OriViewer();
 
 }
 
 function rot_and_draw(rot_ax_dir) {
     rot_Lattice(rot_ax_dir);
-    draw_DetMap();
+    showUBmatrix();
+    Ei_max_adjust_and_draw();
+    //draw_DetMap();
     draw_OriViewer();
+}
+
+function Ei_max_adjust_and_draw(){
+    document.getElementById("Ei_max_disp").value = document.getElementById("Ei_max").value;
+    Ei_max = Number(document.getElementById("Ei_max").value);
+    draw_DetMap();
+
 }
 
 function set_Lattice(){
 
     //input parameters: lattice constants and sample orientation)
-    a = Number(document.getElementById('a').value);
-    b = Number(document.getElementById('b').value);
-    c = Number(document.getElementById('c').value);
-    alpha = Number(document.getElementById('alpha').value)/180.0*Math.PI;   // in radian
-    beta  = Number(document.getElementById('beta').value)/180.0*Math.PI;    // in radian
-    gamma = Number(document.getElementById('gamma').value)/180.0*Math.PI;   // in radian
+    let a = Number(document.getElementById('a').value);
+    let b = Number(document.getElementById('b').value);
+    let c = Number(document.getElementById('c').value);
+    let alpha = Number(document.getElementById('alpha').value)/180.0*Math.PI;   // in radian
+    let beta  = Number(document.getElementById('beta').value)/180.0*Math.PI;    // in radian
+    let gamma = Number(document.getElementById('gamma').value)/180.0*Math.PI;   // in radian
     u[0] = Number(document.getElementById('u1').value);
     u[1] = Number(document.getElementById('u2').value);
     u[2] = Number(document.getElementById('u3').value);
@@ -97,6 +118,7 @@ function set_Lattice(){
     v[1] = Number(document.getElementById('v2').value);
     v[2] = Number(document.getElementById('v3').value);
 
+    latMax= Math.max(a,b,c);
     // calculation
     let DD = (Math.cos(alpha)-Math.cos(gamma)*Math.cos(beta))/Math.sin(gamma);
     let PP = Math.sqrt(Math.sin(beta)-DD**2.0);
@@ -163,10 +185,9 @@ function draw_DetMap(){
     context.fillStyle = "rgb(0, 0, 100)";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    Hmax = Number(document.getElementById('Hmax').value);
-    Kmax = Number(document.getElementById('Kmax').value);
-    Lmax = Number(document.getElementById('Lmax').value);
-
+    if(imageLoaded==true){
+        context.drawImage(image, 0, 0);
+    }
     
     // line
 //    context.strokeStyle = "rgb(255, 0, 0)";
@@ -180,10 +201,16 @@ function draw_DetMap(){
     context.fillStyle = "rgb(250, 250, 0)";
     context.lineWidth=2;
 
+    indexMax= Math.floor(Math.sqrt(Ei_max/2.072)*latMax/4.0/Math.PI);
+    context.fillText(indexMax, 100, 100);   // display value for check
+
     var Ghkl=new Array(3);
-    for (var H=-Hmax;H<=Hmax;H+=1){
-        for (var K=-Kmax;K<=Kmax;K+=1){
-            for (var L=-Lmax;L<=Lmax;L+=1){
+    for (var H=-indexMax;H<=indexMax;H+=1){
+        for (var K=-indexMax;K<=indexMax;K+=1){
+            for (var L=-indexMax;L<=indexMax;L+=1){
+    //for (var H=-Hmax;H<=Hmax;H+=1){
+    //    for (var K=-Kmax;K<=Kmax;K+=1){
+    //        for (var L=-Lmax;L<=Lmax;L+=1){
 
                 if((H==0)&&(K==0)&&(L==0)){
                 }
@@ -198,21 +225,24 @@ function draw_DetMap(){
                     else{
                         let G_sq = Ghkl[0]**2.0+Ghkl[1]**2.0+Ghkl[2]**2.0;
                         let Ki = -0.5*G_sq/Ghkl[0]; // Ki >0
-                        lambda = 2.0*Math.PI/Ki;
+                        lambda = 2.0*Math.PI/Ki;    // Angstrome
                         //lambda = Math.abs(4.0*Math.PI*Ghkl[0]/G_sq);
 
-                        let phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
-                        let phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
+                        if(lambda > 2.0*Math.PI/Math.sqrt(Ei_max/2.072)){   // lambda_min=2PI/sqrt(Ei_max/2.072)
 
-                        let PosX=scaleX*phih/Math.PI*180.0/maxphih+X0;
-                        let PosY=scaleY*(HD+LD/2-L20*Math.tan(phiv))/LD
+                            let phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
+                            let phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
 
-                        context.beginPath();
-                        context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
-                        context.stroke();
+                            let PosX=scaleX*phih/Math.PI*180.0/maxphih+X0;
+                            let PosY=scaleY*(HD+LD/2-L20*Math.tan(phiv))/LD
 
-                        context.fillText(String(H)+String(K)+String(L), PosX, PosY+15);
-                    }  
+                            context.beginPath();
+                            context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
+                            context.stroke();
+
+                            context.fillText(String(H)+String(K)+String(L), PosX, PosY+15);
+                        }
+                   }  
                 }
             }
         }
@@ -383,3 +413,35 @@ function draw_OriViewer(){
   //  tick();
   
   }
+
+function getFile(e){
+//    console.log(e[0]);  //for debug
+    let reader = new FileReader();
+    reader.readAsDataURL(e[0]);
+    reader.onload = function() {
+        imageLoaded=true;
+        image.src = reader.result;
+        image.onload=function() {
+            draw_DetMap();         
+        };
+    };
+}
+
+
+function removeFile(){
+    //    console.log(e[0]);  //for debug
+    imageLoaded=false;
+    draw_DetMap();         
+}
+
+function showUBmatrix(){
+    document.getElementById('as_x').value = Math.round((a_star[0]*decimal_digit))/decimal_digit;
+    document.getElementById('as_y').value = Math.round((a_star[1]*decimal_digit))/decimal_digit;
+    document.getElementById('as_z').value = Math.round((a_star[2]*decimal_digit))/decimal_digit;
+    document.getElementById('bs_x').value = Math.round((b_star[0]*decimal_digit))/decimal_digit;
+    document.getElementById('bs_y').value = Math.round((b_star[1]*decimal_digit))/decimal_digit;
+    document.getElementById('bs_z').value = Math.round((b_star[2]*decimal_digit))/decimal_digit;
+    document.getElementById('cs_x').value = Math.round((c_star[0]*decimal_digit))/decimal_digit;
+    document.getElementById('cs_y').value = Math.round((c_star[1]*decimal_digit))/decimal_digit;
+    document.getElementById('cs_z').value = Math.round((c_star[2]*decimal_digit))/decimal_digit;
+}
