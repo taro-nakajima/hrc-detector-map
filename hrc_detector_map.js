@@ -11,7 +11,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.4.6";
+var version = "0.4.7";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 var decimal_digit=1000;     // decimal digit for UBmatrix
@@ -47,11 +47,15 @@ var a_star = new Array(3);
 var b_star = new Array(3);
 var c_star = new Array(3);
 
-//var Hmax=10;
-//var Kmax=10;
-//var Lmax=10;
-var latMax;         //max of lattice constants a,b and c
-var indexMax;       //max of index for drawing detector map
+var as_len;
+var bs_len;
+var cs_len;
+
+var Hmax;
+var Kmax;
+var Lmax;
+//var latMax;         //max of lattice constants a,b and c
+//var indexMax;       //max of index for drawing detector map
 
 var Ei_max = 600;
 
@@ -118,6 +122,7 @@ function set_Lattice(){
     v[1] = Number(document.getElementById('v2').value);
     v[2] = Number(document.getElementById('v3').value);
 
+
     latMax= Math.max(a,b,c);
     // calculation
     let DD = (Math.cos(alpha)-Math.cos(gamma)*Math.cos(beta))/Math.sin(gamma);
@@ -168,6 +173,10 @@ function set_Lattice(){
         b_star[i]= 2.0*Math.PI/b/PP/Math.sin(gamma)*(c_unit[(i+1)%3]*a_unit[(i+2)%3]-c_unit[(i+2)%3]*a_unit[(i+1)%3]);
         c_star[i]= 2.0*Math.PI/c/PP/Math.sin(gamma)*(a_unit[(i+1)%3]*b_unit[(i+2)%3]-a_unit[(i+2)%3]*b_unit[(i+1)%3]);
     }
+    
+    as_len = Math.sqrt(a_star[0]**2.0+a_star[1]**2.0+a_star[2]**2.0);
+    bs_len = Math.sqrt(b_star[0]**2.0+b_star[1]**2.0+b_star[2]**2.0);
+    cs_len = Math.sqrt(c_star[0]**2.0+c_star[1]**2.0+c_star[2]**2.0);
 
 }
 
@@ -201,16 +210,22 @@ function draw_DetMap(){
     context.fillStyle = "rgb(250, 250, 0)";
     context.lineWidth=2;
 
+    let Qmax = 2.0*Math.sqrt(Ei_max/2.072);
+    Hmax = Math.floor(Qmax/as_len);
+    Kmax = Math.floor(Qmax/bs_len);
+    Lmax = Math.floor(Qmax/cs_len);
+
     indexMax= Math.floor(Math.sqrt(Ei_max/2.072)*latMax/4.0/Math.PI);
-    context.fillText(indexMax, 100, 100);   // display value for check
+    context.fillText(String(Hmax)+String(Kmax)+String(Lmax), 100, 100);   // display value for check
 
     var Ghkl=new Array(3);
-    for (var H=-indexMax;H<=indexMax;H+=1){
-        for (var K=-indexMax;K<=indexMax;K+=1){
-            for (var L=-indexMax;L<=indexMax;L+=1){
-    //for (var H=-Hmax;H<=Hmax;H+=1){
-    //    for (var K=-Kmax;K<=Kmax;K+=1){
-    //        for (var L=-Lmax;L<=Lmax;L+=1){
+    
+    //for (var H=-indexMax;H<=indexMax;H+=1){
+    //    for (var K=-indexMax;K<=indexMax;K+=1){
+    //        for (var L=-indexMax;L<=indexMax;L+=1){
+    for (var H=-Hmax;H<=Hmax;H+=1){
+        for (var K=-Kmax;K<=Kmax;K+=1){
+            for (var L=-Lmax;L<=Lmax;L+=1){
 
                 if((H==0)&&(K==0)&&(L==0)){
                 }
