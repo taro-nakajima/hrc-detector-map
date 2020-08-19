@@ -1,5 +1,6 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
 
+// 2020/8/19, changed phih to detector number (128-383) 
 // 2020/8/17, changed Hmax, Kmax, and Lmax to indexMax defined using maximum of lattice constant
 // 2020/8/4, displayed indicies for debug
 // 2020/8/4, changed Ki to -|G|^2/Gx
@@ -11,7 +12,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.4.7";
+var version = "0.5";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 var decimal_digit=1000;     // decimal digit for UBmatrix
@@ -54,16 +55,25 @@ var cs_len;
 var Hmax;
 var Kmax;
 var Lmax;
-//var latMax;         //max of lattice constants a,b and c
-//var indexMax;       //max of index for drawing detector map
 
 var Ei_max = 600;
+
+var phih;
+var phiv;
 
 var lambda;             // wavelength for Q-vector
 var maxphih = 60.0;     // maximum of the phi angle on the horizontal plane
 //var maxphiv = 60.0;
 var scaleX=800;
 var scaleY=500;
+
+const BankAngleMin = [0.049428538, 0.407221034, 0.765013531, -0.544643747]; // angles of the right edge of the detector banks (rad)
+const BankAngleMax = [0.378498924, 0.736291421, 1.094083918, -0.215347289]; // angles of the left edge of the detector banks (rad)
+const Coefphihvsdet0 = [-0.606141374, -0.577419264, -0.548697154, -2.188553408];    // 0th-order coefficients for  phih vs detector 
+const Coefphihvsdet1 = 0.005141725; // 1st-order coefficients for phih vs detector, the same value for all the banks except the direct-beam bank  
+const DetMin = 128; // minimum of detector number for drawing 
+const DetMax = 384; // maximum of detector number for drawing plus 1
+const numDetinBank = 64; // number of detectors in each bank
 
 //variables for 3D orientation viewer
 var arrow_scale=150;        //arrows for a*, b* and c*: convert A-1 to pixel.
@@ -122,8 +132,6 @@ function set_Lattice(){
     v[1] = Number(document.getElementById('v2').value);
     v[2] = Number(document.getElementById('v3').value);
 
-
-    latMax= Math.max(a,b,c);
     // calculation
     let DD = (Math.cos(alpha)-Math.cos(gamma)*Math.cos(beta))/Math.sin(gamma);
     let PP = Math.sqrt(Math.sin(beta)-DD**2.0);
@@ -189,40 +197,47 @@ function draw_DetMap(){
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.strokeStyle = "rgb(0, 0, 0)";
     context.lineWidth=1;
+    
 
     //set background color
     context.fillStyle = "rgb(0, 0, 100)";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
+    //display bank gaps
+    context.strokeStyle ="white";
+    context.fillStyle = "white";
+    context.font = "12px sans-serif";
+    context.beginPath();
+    for(let det=DetMin; det<DetMax; det+=numDetinBank){
+        context.moveTo(det2posX(det), 0);
+        context.lineTo(det2posX(det),scaleY);
+        context.fillText(det, det2posX(det)+3, scaleY);
+    }
+    context.stroke();
+    
+
     if(imageLoaded==true){
         context.drawImage(image, 0, 0);
     }
     
-    // line
-//    context.strokeStyle = "rgb(255, 0, 0)";
-//    context.beginPath();
-//    context.moveTo(X0, Y0);
-//    context.lineTo(X0+200, Y0);
-//    context.stroke();
+
 
     // color setting for circles indicating reflections
     context.strokeStyle = "rgb(250, 250, 0)";
     context.fillStyle = "rgb(250, 250, 0)";
     context.lineWidth=2;
+    context.font = "10px sans-serif";
 
     let Qmax = 2.0*Math.sqrt(Ei_max/2.072);
     Hmax = Math.floor(Qmax/as_len);
     Kmax = Math.floor(Qmax/bs_len);
     Lmax = Math.floor(Qmax/cs_len);
 
-    indexMax= Math.floor(Math.sqrt(Ei_max/2.072)*latMax/4.0/Math.PI);
-    context.fillText(String(Hmax)+String(Kmax)+String(Lmax), 100, 100);   // display value for check
+    //indexMax= Math.floor(Math.sqrt(Ei_max/2.072)*latMax/4.0/Math.PI);
+    //context.fillText(String(Hmax)+String(Kmax)+String(Lmax), 100, 100);   // display value for check
 
     var Ghkl=new Array(3);
-    
-    //for (var H=-indexMax;H<=indexMax;H+=1){
-    //    for (var K=-indexMax;K<=indexMax;K+=1){
-    //        for (var L=-indexMax;L<=indexMax;L+=1){
+
     for (var H=-Hmax;H<=Hmax;H+=1){
         for (var K=-Kmax;K<=Kmax;K+=1){
             for (var L=-Lmax;L<=Lmax;L+=1){
@@ -245,10 +260,10 @@ function draw_DetMap(){
 
                         if(lambda > 2.0*Math.PI/Math.sqrt(Ei_max/2.072)){   // lambda_min=2PI/sqrt(Ei_max/2.072)
 
-                            let phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
-                            let phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
+                            phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
+                            phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
 
-                            let PosX=scaleX*phih/Math.PI*180.0/maxphih+X0;
+                            let PosX=det2posX(phih2det(phih));
                             let PosY=scaleY*(HD+LD/2-L20*Math.tan(phiv))/LD
 
                             context.beginPath();
@@ -262,6 +277,8 @@ function draw_DetMap(){
             }
         }
     }
+
+    
 
 //text for debug
 //  context.font = "italic 13px sans-serif";
@@ -410,7 +427,6 @@ function draw_OriViewer(){
     scene.add(arrowHelper);
   
   
-  
     // 平行光源
     const directionalLight = new THREE.DirectionalLight(0xffffff);
     directionalLight.position.set(-150, 240, 500);
@@ -459,4 +475,20 @@ function showUBmatrix(){
     document.getElementById('cs_x').value = Math.round((c_star[0]*decimal_digit))/decimal_digit;
     document.getElementById('cs_y').value = Math.round((c_star[1]*decimal_digit))/decimal_digit;
     document.getElementById('cs_z').value = Math.round((c_star[2]*decimal_digit))/decimal_digit;
+}
+
+//--------------------------------------
+
+function phih2det(phih){    // convert phih to detector number
+    let det=-1;
+    for(let i=0;i<BankAngleMin.length; i++){
+        if((phih >= BankAngleMin[i]) && (phih <= BankAngleMax[i])){
+            det = (phih-Coefphihvsdet0[i])/Coefphihvsdet1;
+        }
+    }
+    return det; 
+}
+
+function det2posX(det){     // convert detector number to x-axis of detector map
+    return scaleX*(det-DetMin)/(DetMax-DetMin)
 }
