@@ -1,5 +1,6 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
 
+// 2020/8/20, activated reflection condition
 // 2020/8/19, changed phih to detector number (128-383) 
 // 2020/8/17, changed Hmax, Kmax, and Lmax to indexMax defined using maximum of lattice constant
 // 2020/8/4, displayed indicies for debug
@@ -12,7 +13,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.5";
+var version = "0.6.1";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 var decimal_digit=1000;     // decimal digit for UBmatrix
@@ -52,6 +53,11 @@ var as_len;
 var bs_len;
 var cs_len;
 
+var RefCon = '';
+
+//var H;
+//var K;
+//var L;
 var Hmax;
 var Kmax;
 var Lmax;
@@ -76,12 +82,12 @@ const DetMax = 384; // maximum of detector number for drawing plus 1
 const numDetinBank = 64; // number of detectors in each bank
 
 //variables for 3D orientation viewer
-var arrow_scale=150;        //arrows for a*, b* and c*: convert A-1 to pixel.
-var arrow_HeadLen=20;       //lengths of arrowheads (pixel)
-var arrow_HeadWidth=10;     //widths of arrowheads (pixel)
-var DetBankAngles=[12.25/180.0*Math.PI, 32.75/180.0*Math.PI, 53.2/180.0*Math.PI, -21.8/180.0*Math.PI];   //angles of the centers of the detector banks (rad)
-var DetBankWidth=1300;  // width of the detector banks (mm)
-var DetBankScale=0.1;   // convert mm to pixel.
+var arrow_scale = 150;        //arrows for a*, b* and c*: convert A-1 to pixel.
+var arrow_HeadLen = 20;       //lengths of arrowheads (pixel)
+var arrow_HeadWidth = 10;     //widths of arrowheads (pixel)
+var DetBankAngles = [12.25/180.0*Math.PI, 32.75/180.0*Math.PI, 53.2/180.0*Math.PI, -21.8/180.0*Math.PI];   //angles of the centers of the detector banks (rad)
+var DetBankWidth = 1300;  // width of the detector banks (mm)
+var DetBankScale = 0.1;   // convert mm to pixel.
 
 //variable for loading observed Laue image.
 var imageLoaded=false;
@@ -94,6 +100,7 @@ function draw() {
     document.getElementById("verNum2").innerHTML=version;
 
     set_Lattice();
+    set_ReflectionCondition();
     showUBmatrix();
     Ei_max_adjust_and_draw();
     //draw_DetMap();
@@ -188,6 +195,53 @@ function set_Lattice(){
 
 }
 
+function set_ReflectionCondition(){
+    RefCon = document.getElementById("RefCon").value;
+}
+
+function check_ReflectionCondition(RefCon,H,K,L){
+    var retstr=false;
+
+    switch(RefCon){
+        case 'none':
+            retstr=true;
+            break;
+        case 'H+K=2n':
+            if((H+K)%2==0){
+                retstr=true;
+            }
+            break;
+        case 'H+L=2n':
+            if((H+L)%2==0){
+                retstr=true;
+            }
+            break;
+        case 'K+L=2n':
+            if((K+L)%2==0){
+                retstr=true;
+            }
+            break;
+        case 'H+K+L=2n':
+            if((H+K+L)%2==0){
+                retstr=true;
+            }
+            break;
+        case 'H,K,L all even or all odd':
+            let hklsp = Math.abs(H%2)+Math.abs(K%2)+Math.abs(L%2);
+            if(hklsp==0||hklsp==3){
+                retstr=true;
+            }
+            break;
+        case '-H+K+L=3n':
+            if((-H+K+L)%3==0){
+                retstr=true;
+            }
+            break;
+        default:
+    }
+    return retstr;
+}
+
 function draw_DetMap(){
 
     var canvas = document.getElementById('CanvasDetMap');
@@ -221,7 +275,6 @@ function draw_DetMap(){
     }
     
 
-
     // color setting for circles indicating reflections
     context.strokeStyle = "rgb(250, 250, 0)";
     context.fillStyle = "rgb(250, 250, 0)";
@@ -233,8 +286,7 @@ function draw_DetMap(){
     Kmax = Math.floor(Qmax/bs_len);
     Lmax = Math.floor(Qmax/cs_len);
 
-    //indexMax= Math.floor(Math.sqrt(Ei_max/2.072)*latMax/4.0/Math.PI);
-    //context.fillText(String(Hmax)+String(Kmax)+String(Lmax), 100, 100);   // display value for check
+    //context.fillText(check_Extinction('H+K=2n',-2,4,10), 100, 100);   // display value for check
 
     var Ghkl=new Array(3);
 
@@ -242,17 +294,17 @@ function draw_DetMap(){
         for (var K=-Kmax;K<=Kmax;K+=1){
             for (var L=-Lmax;L<=Lmax;L+=1){
 
-                if((H==0)&&(K==0)&&(L==0)){
+                if(((H==0)&&(K==0)&&(L==0))||check_ReflectionCondition(RefCon,H,K,L)==false){
+                    // Reflection condition is not satisfied or H=K=L=0.
                 }
                 else{
                     for(let i=0;i<3;i++){
                         Ghkl[i]=H*a_star[i]+K*b_star[i]+L*c_star[i];
                     }
-    
                     if(Ghkl[0]>=0.0){
                         // Bragg's law is not satisfied.
                     }
-                    else{
+                    else{  
                         let G_sq = Ghkl[0]**2.0+Ghkl[1]**2.0+Ghkl[2]**2.0;
                         let Ki = -0.5*G_sq/Ghkl[0]; // Ki >0
                         lambda = 2.0*Math.PI/Ki;    // Angstrome
@@ -272,7 +324,7 @@ function draw_DetMap(){
 
                             context.fillText(String(H)+String(K)+String(L), PosX, PosY+15);
                         }
-                   }  
+                    }  
                 }
             }
         }
