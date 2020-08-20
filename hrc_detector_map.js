@@ -13,7 +13,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.6";
+var version = "0.6.1";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 var decimal_digit=1000;     // decimal digit for UBmatrix
@@ -199,42 +199,42 @@ function set_ReflectionCondition(){
     RefCon = document.getElementById("RefCon").value;
 }
 
-function check_Extinction(RefCon,H,K,L){
-    var retstr='false';
+function check_ReflectionCondition(RefCon,H,K,L){
+    var retstr=false;
 
     switch(RefCon){
         case 'none':
-            retstr='true';
+            retstr=true;
             break;
         case 'H+K=2n':
             if((H+K)%2==0){
-                retstr='true';
+                retstr=true;
             }
             break;
         case 'H+L=2n':
             if((H+L)%2==0){
-                retstr='true';
+                retstr=true;
             }
             break;
         case 'K+L=2n':
             if((K+L)%2==0){
-                retstr='true';
+                retstr=true;
             }
             break;
         case 'H+K+L=2n':
             if((H+K+L)%2==0){
-                retstr='true';
+                retstr=true;
             }
             break;
         case 'H,K,L all even or all odd':
             let hklsp = Math.abs(H%2)+Math.abs(K%2)+Math.abs(L%2);
             if(hklsp==0||hklsp==3){
-                retstr='true';
+                retstr=true;
             }
             break;
         case '-H+K+L=3n':
             if((-H+K+L)%3==0){
-                retstr='true';
+                retstr=true;
             }
             break;
         default:
@@ -294,18 +294,15 @@ function draw_DetMap(){
         for (var K=-Kmax;K<=Kmax;K+=1){
             for (var L=-Lmax;L<=Lmax;L+=1){
 
-                if((H==0)&&(K==0)&&(L==0)){
+                if(((H==0)&&(K==0)&&(L==0))||check_ReflectionCondition(RefCon,H,K,L)==false){
+                    // Reflection condition is not satisfied or H=K=L=0.
                 }
                 else{
                     for(let i=0;i<3;i++){
                         Ghkl[i]=H*a_star[i]+K*b_star[i]+L*c_star[i];
                     }
-    
                     if(Ghkl[0]>=0.0){
                         // Bragg's law is not satisfied.
-                    }
-                    else if(check_Extinction(RefCon,H,K,L)=='false'){
-                        // extinction rule is satisfied.
                     }
                     else{  
                         let G_sq = Ghkl[0]**2.0+Ghkl[1]**2.0+Ghkl[2]**2.0;
@@ -327,7 +324,7 @@ function draw_DetMap(){
 
                             context.fillText(String(H)+String(K)+String(L), PosX, PosY+15);
                         }
-                   }  
+                    }  
                 }
             }
         }
