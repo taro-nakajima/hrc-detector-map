@@ -13,7 +13,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.6.1";
+var version = "0.7";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 var decimal_digit=1000;     // decimal digit for UBmatrix
@@ -24,7 +24,7 @@ var length1=200;    //unused variable
 
 var radius=5;
 
-var HD = 40;    // height of center of PSD from incident beam (mm)
+var HD = 0;    // height of center of PSD from incident beam (mm)
 var LD = 2800;  // length of PSD (mm)
 var L20 = 4000; // distance from sample to PSD in horizontal plane (mm)
 
@@ -257,6 +257,11 @@ function draw_DetMap(){
     context.fillStyle = "rgb(0, 0, 100)";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
+    //show observed Laue pattern
+    if(imageLoaded==true){
+        context.drawImage(image, 0, 0);
+    }
+
     //display bank gaps
     context.strokeStyle ="white";
     context.fillStyle = "white";
@@ -270,9 +275,6 @@ function draw_DetMap(){
     context.stroke();
     
 
-    if(imageLoaded==true){
-        context.drawImage(image, 0, 0);
-    }
     
 
     // color setting for circles indicating reflections
@@ -330,7 +332,72 @@ function draw_DetMap(){
         }
     }
 
+    //draw large circle for the target reflection.
+    let Ht=Number(document.getElementById("Ht").value);
+    let Kt=Number(document.getElementById("Kt").value);
+    let Lt=Number(document.getElementById("Lt").value);
+
+    for(let i=0;i<3;i++){
+        Ghkl[i]=Ht*a_star[i]+Kt*b_star[i]+Lt*c_star[i];
+    }
+
+    let notAccessible = false;
+
+    if(check_ReflectionCondition(RefCon,Ht,Kt,Lt)==false){
+        document.getElementById("Q_len").innerHTML="[forbidden]";
+        document.getElementById("phi").innerHTML="[forbidden]";
+        document.getElementById("phih").innerHTML="[forbidden]";
+        document.getElementById("lambda").innerHTML="[forbidden]";
+    }
+    else if(((Ht==0)&&(Kt==0)&&(Lt==0))||(Ghkl[0]>=0.0)){
+        notAccessible=true;
+    }
+    else{
+        let G_sq = Ghkl[0]**2.0+Ghkl[1]**2.0+Ghkl[2]**2.0;
+        let Ki = -0.5*G_sq/Ghkl[0]; // Ki >0
+        lambda = 2.0*Math.PI/Ki;    // Angstrome
+
+        if(lambda > 2.0*Math.PI/Math.sqrt(Ei_max/2.072)){   // lambda_min=2PI/sqrt(Ei_max/2.072)
+
+            console.log("get.");
+
+            phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
+            phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
+
+            let PosX=det2posX(phih2det(phih));
+            let PosY=scaleY*(HD+LD/2-L20*Math.tan(phiv))/LD
+
+            if(PosX>=0 && PosX<scaleX && PosY >= 0 && PosY <=scaleY){
+                context.beginPath();
+                context.arc(PosX,PosY, radius+3, 0, 2 * Math.PI);
+                context.stroke();
+                let phi_deg = Math.asin(Math.sqrt(G_sq)/(2.0*Ki))*2.0/Math.PI*180.0;
+                let phih_deg = phih/Math.PI*180.0;
+
+                document.getElementById("Q_len").innerHTML=Math.round(Math.sqrt(G_sq)*decimal_digit)/decimal_digit;
+                document.getElementById("phi").innerHTML=Math.round(phi_deg*decimal_digit)/decimal_digit;
+                document.getElementById("phih").innerHTML=Math.round(phih_deg*decimal_digit)/decimal_digit;
+                document.getElementById("lambda").innerHTML=Math.round(lambda*decimal_digit)/decimal_digit;
     
+            }
+            else{
+                notAccessible=true;
+            }
+
+        }
+        else{
+            notAccessible=true;
+        }
+    }
+
+    if(notAccessible==true){
+        document.getElementById("Q_len").innerHTML="[not accessible]";
+        document.getElementById("phi").innerHTML="[not accessible]";
+        document.getElementById("phih").innerHTML="[not accessible]";
+        document.getElementById("lambda").innerHTML="[not accessible]";
+    }
+
+
 
 //text for debug
 //  context.font = "italic 13px sans-serif";
@@ -409,7 +476,11 @@ function draw_OriViewer(){
   
     // カメラを作成
     const camera = new THREE.PerspectiveCamera(30, width / height);
-    camera.position.set(-800, 800, 800);
+//    camera.position.set(-800, 800, 800);
+    let cam_theta=Number(document.getElementById("cam_theta").value);
+    let cam_phi=Number(document.getElementById("cam_phi").value);
+    let cam_len=1200;
+    camera.position.set(cam_len*Math.sin(Math.PI/180.0*cam_theta)*Math.sin(Math.PI/180.0*cam_phi), cam_len*Math.cos(Math.PI/180.0*cam_theta), cam_len*Math.sin(Math.PI/180.0*cam_theta)*Math.cos(Math.PI/180.0*cam_phi));
     camera.lookAt(new THREE.Vector3(0, 0, 0));
   
     //note: 
