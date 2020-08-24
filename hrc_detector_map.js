@@ -55,9 +55,6 @@ var cs_len;
 
 var RefCon = '';
 
-//var H;
-//var K;
-//var L;
 var Hmax;
 var Kmax;
 var Lmax;
@@ -66,10 +63,7 @@ var Ei_max = 600;
 
 var phih;
 var phiv;
-
 var lambda;             // wavelength for Q-vector
-var maxphih = 60.0;     // maximum of the phi angle on the horizontal plane
-//var maxphiv = 60.0;
 var scaleX=800;
 var scaleY=500;
 
@@ -103,7 +97,6 @@ function draw() {
     set_ReflectionCondition();
     showUBmatrix();
     Ei_max_adjust_and_draw();
-    //draw_DetMap();
     draw_OriViewer();
 
 }
@@ -111,8 +104,7 @@ function draw() {
 function rot_and_draw(rot_ax_dir) {
     rot_Lattice(rot_ax_dir);
     showUBmatrix();
-    Ei_max_adjust_and_draw();
-    //draw_DetMap();
+    draw_DetMap();
     draw_OriViewer();
 }
 
@@ -238,6 +230,7 @@ function check_ReflectionCondition(RefCon,H,K,L){
             }
             break;
         default:
+            retstr=true;
     }
     return retstr;
 }
@@ -275,8 +268,6 @@ function draw_DetMap(){
     context.stroke();
     
 
-    
-
     // color setting for circles indicating reflections
     context.strokeStyle = "rgb(250, 250, 0)";
     context.fillStyle = "rgb(250, 250, 0)";
@@ -310,7 +301,6 @@ function draw_DetMap(){
                         let G_sq = Ghkl[0]**2.0+Ghkl[1]**2.0+Ghkl[2]**2.0;
                         let Ki = -0.5*G_sq/Ghkl[0]; // Ki >0
                         lambda = 2.0*Math.PI/Ki;    // Angstrome
-                        //lambda = Math.abs(4.0*Math.PI*Ghkl[0]/G_sq);
 
                         if(lambda > 2.0*Math.PI/Math.sqrt(Ei_max/2.072)){   // lambda_min=2PI/sqrt(Ei_max/2.072)
 
@@ -476,7 +466,6 @@ function draw_OriViewer(){
   
     // カメラを作成
     const camera = new THREE.PerspectiveCamera(30, width / height);
-//    camera.position.set(-800, 800, 800);
     let cam_theta=Number(document.getElementById("cam_theta").value);
     let cam_phi=Number(document.getElementById("cam_phi").value);
     let cam_len=1200;
@@ -564,12 +553,10 @@ function draw_OriViewer(){
   //  scene.add(pointLightHelper);
   
     renderer.render(scene, camera);
-  //  tick();
   
   }
 
 function getFile(e){
-//    console.log(e[0]);  //for debug
     let reader = new FileReader();
     reader.readAsDataURL(e[0]);
     reader.onload = function() {
@@ -583,7 +570,6 @@ function getFile(e){
 
 
 function removeFile(){
-    //    console.log(e[0]);  //for debug
     imageLoaded=false;
     draw_DetMap();         
 }

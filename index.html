@@ -84,8 +84,26 @@
                         <br />
 
                         <div class="section_02">Incident Neutron Beam </div>
-                        <i>E</i><sub>i</sub> max:<input type="range" value="500" min="10" max="1000" step="10" id="Ei_max" oninput="Ei_max_adjust_and_draw()"><input size="10" value="500" id="Ei_max_disp"> meV<br />
+                        <b><i>E</i><sub>i</sub> max</b><br />
+                        <table>
+                            <tr>
+                                <td>
+                                    <input type="range" value="500" min="10" max="1000" step="10" id="Ei_max" oninput="Ei_max_adjust_and_draw()">
+                                </td>
+                                <td>
+                                    <input size="5" value="500" id="Ei_max_disp"> meV
+                                </td>
+                            </tr>
+                        </table>
                         <br />
+                        <b>Dark &lambda;-range due to T<sub>0</sub> chopper</b><br />
+                            <select id="T0_freq">
+                                <option value="T0_25Hz">25 Hz</option>
+                                <option value="T0_50Hz" selected>50Hz</option>
+                                <option value="T0_100Hz">100Hz</option>
+                            </select><br />
+                            <br />
+    
         
                         <div class="section_02">Load observed Laue pattern </div>
                         <input type="file" onchange="getFile(this.files)"><br />
@@ -106,7 +124,6 @@
                         <div class="section_02">Target reflection </div>
                         (<i>H</i><sub>t</sub>,<i>K</i><sub>t</sub>,<i>L</i><sub>t</sub>)=(<input size="5" id="Ht" value="0">,<input size="5" id="Kt" value="0">,<input size="5" id="Lt" value="0">)
                         <input type="button" value="Set" onclick="draw_DetMap()"><br />
-                        <br />
                         |<b>Q</b>|(=2&pi;/<i>d</i>) = <font id="Q_len"></font> A<sup>-1</sup><br />
                         &phi; = <font id="phi"></font>  deg<br />
                         &phi;<sub>h</sub> = <font id="phih"></font> deg<br />
@@ -117,7 +134,7 @@
 
                         <table>
                             <tr>
-                                <td>Qx</td>
+                                <td><i>Q</i><sub>x</sub></td>
                                 <td></td>
                                 <td>
                                     <input type="text" size="5" id="as_x">
@@ -128,10 +145,10 @@
                                 <td>
                                     <input type="text" size="5" id="cs_x">
                                 </td>
-                                <td>H</td>
+                                <td><i>H</i></td>
                             </tr>
                             <tr>
-                                <td>Qy</td>
+                                <td><i>Q</i><sub>y</sub></td>
                                 <td>=</td>
                                 <td>
                                     <input type="text" size="5" id="as_y">
@@ -142,10 +159,10 @@
                                 <td>
                                     <input type="text" size="5" id="cs_y">
                                 </td>
-                                <td>K</td>
+                                <td><i>K</i></td>
                             </tr>
                             <tr>
-                                <td>Qz</td>
+                                <td><i>Q</i><sub>z</sub></td>
                                 <td></td>
                                 <td>
                                     <input type="text" size="5" id="as_z">
@@ -156,7 +173,7 @@
                                 <td>
                                     <input type="text" size="5" id="cs_z">
                                 </td>
-                                <td>L</td>
+                                <td><i>L</i></td>
                             </tr>
                         </table>
                         <br />
