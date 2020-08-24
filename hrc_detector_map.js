@@ -13,7 +13,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.6.1";
+var version = "0.6.2";
 
 var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 var decimal_digit=1000;     // decimal digit for UBmatrix
@@ -27,6 +27,8 @@ var radius=5;
 var HD = 40;    // height of center of PSD from incident beam (mm)
 var LD = 2800;  // length of PSD (mm)
 var L20 = 4000; // distance from sample to PSD in horizontal plane (mm)
+const LB20 = 4004.0 // distance from sample to the center of high-angle detector bank
+const widthB = 1324.87 // full width of detector array for a bank
 
 var u = new Array(3); // indices, pallarel to the incident beam
 var v = new Array(3); // indices, another direction in the horizontal plane including the incidnet beam
@@ -308,7 +310,6 @@ function draw_DetMap(){
                         let G_sq = Ghkl[0]**2.0+Ghkl[1]**2.0+Ghkl[2]**2.0;
                         let Ki = -0.5*G_sq/Ghkl[0]; // Ki >0
                         lambda = 2.0*Math.PI/Ki;    // Angstrome
-                        //lambda = Math.abs(4.0*Math.PI*Ghkl[0]/G_sq);
 
                         if(lambda > 2.0*Math.PI/Math.sqrt(Ei_max/2.072)){   // lambda_min=2PI/sqrt(Ei_max/2.072)
 
@@ -316,7 +317,8 @@ function draw_DetMap(){
                             phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
 
                             let PosX=det2posX(phih2det(phih));
-                            let PosY=scaleY*(HD+LD/2-L20*Math.tan(phiv))/LD
+                            let PosY=scaleY*(HD+LD/2-calcL20(phih2det(phih))*Math.tan(phiv))/LD
+                        //    let PosY=scaleY*(HD+LD/2-L20*Math.tan(phiv))/LD
 
                             context.beginPath();
                             context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
@@ -543,4 +545,8 @@ function phih2det(phih){    // convert phih to detector number
 
 function det2posX(det){     // convert detector number to x-axis of detector map
     return scaleX*(det-DetMin)/(DetMax-DetMin)
+}
+
+function calcL20(det){      // calculate L20 
+    return Math.sqrt(LB20**2.0+(widthB*(0.5-((det%numDetinBank)+0.5)/numDetinBank))**2.0)
 }
