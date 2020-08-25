@@ -28,6 +28,8 @@ const radius=5;       // radius of circles showing refletions in the simulation.
 const radius_tgt=8;     //// radius of a circle showing a target refletions in the simulation.
 const txt_ofst1=radius+10;   //offset along Y direction for indices shown near each reflection.
 const txt_ofst2=3;   //offset along X direction for detector number shown bottom.
+const fundamental_color="rgb(250, 250, 0)";
+const q_vec_colors = ["rgb(250, 100, 100)","rgb(110, 110, 200)","rgb(110, 250, 10)"];
 
 //variables for calculating Laue diffraction patterns.-------------------
 var u = new Array(3); // indices, pallarel to the incident beam
@@ -90,10 +92,14 @@ var imageLoaded=false;
 var imageURL;
 var image = new Image();
 
-
-function draw() {
+function init_draw(){
     document.getElementById("verNum").innerHTML=version;
     document.getElementById("verNum2").innerHTML=version;
+    draw();
+}
+
+
+function draw() {
 
     set_Lattice();
     set_ReflectionCondition();
@@ -101,6 +107,11 @@ function draw() {
     Ei_max_adjust_and_draw();
     draw_OriViewer();
 
+}
+
+function set_RefCon_and_draw(){
+    set_ReflectionCondition();
+    draw_DetMap();
 }
 
 function rot_and_draw(rot_ax_dir) {
@@ -270,8 +281,8 @@ function draw_DetMap(){
     
 
     // color setting for circles indicating reflections
-    context.strokeStyle = "rgb(250, 250, 0)";
-    context.fillStyle = "rgb(250, 250, 0)";
+    context.strokeStyle = fundamental_color;
+    context.fillStyle = fundamental_color;
     context.lineWidth=2;
     context.font = "10px sans-serif";
 
@@ -280,8 +291,9 @@ function draw_DetMap(){
     Kmax = Math.floor(Qmax/bs_len);
     Lmax = Math.floor(Qmax/cs_len);
 
-    var Ghkl=new Array(3);
-
+    let Ghkl=new Array(3);
+    let isTargetHKL=false;
+    let showHKL=false;
     for (var H=-Hmax;H<=Hmax;H+=1){
         for (var K=-Kmax;K<=Kmax;K+=1){
             for (var L=-Lmax;L<=Lmax;L+=1){
@@ -290,47 +302,45 @@ function draw_DetMap(){
                     // Reflection condition is not satisfied or H=K=L=0.
                 }
                 else{
-                    for(let i=0;i<3;i++){
-                        Ghkl[i]=H*a_star[i]+K*b_star[i]+L*c_star[i];
-                    }
-                    if(Ghkl[0]>=0.0){
-                        // Bragg's law is not satisfied.
-                    }
-                    else{  
-                        let G_sq = Ghkl[0]**2.0+Ghkl[1]**2.0+Ghkl[2]**2.0;
-                        let Ki = -0.5*G_sq/Ghkl[0]; // Ki >0
-                        lambda = 2.0*Math.PI/Ki;    // Angstrome
+                    // funcamental reflections
+                    context.strokeStyle = fundamental_color;
+                    context.fillStyle = fundamental_color;
+                    showHKL=true;
+                    drawBraggReflection(context,H,K,L,isTargetHKL,showHKL);
 
-                        if(lambda > 2.0*Math.PI/Math.sqrt(Ei_max/2.072)){   // lambda_min=2PI/sqrt(Ei_max/2.072)
-
-                            phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
-                            phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
-
-                            let PosX=det2posX(phih2det(phih));
-                            let PosY=scaleY*(HD+LD/2-calcL20(phih2det(phih))*Math.tan(phiv))/LD
-
-                            context.beginPath();
-                            context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
-                            context.stroke();
-
-                            context.fillText(String(H)+String(K)+String(L), PosX, PosY+txt_ofst1);
+                    // reflections with q-vectors
+                    for(let p=0;p<q_vec_colors.length;p++){
+                        let cb_label = 'q'+(p+1)+'_checkbox';
+                        let qh_label = 'q'+(p+1)+'_h';
+                        let qk_label = 'q'+(p+1)+'_k';
+                        let ql_label = 'q'+(p+1)+'_l';
+                        let showHKL_label = 'q'+(p+1)+'_showHKL';
+                        if(document.getElementById(cb_label).checked==true){
+                            context.strokeStyle = q_vec_colors[p];
+                            context.fillStyle = q_vec_colors[p];
+                            showHKL=document.getElementById(showHKL_label).checked;
+                            let q1_H = Number(document.getElementById(qh_label).value); 
+                            let q1_K = Number(document.getElementById(qk_label).value); 
+                            let q1_L = Number(document.getElementById(ql_label).value); 
+                            drawBraggReflection(context,H+q1_H,K+q1_K,L+q1_L,isTargetHKL,showHKL);
+                            drawBraggReflection(context,H-q1_H,K-q1_K,L-q1_L,isTargetHKL,showHKL);    
                         }
-                    }  
+    
+                    }
                 }
             }
         }
     }
 
     //draw large circle for the target reflection.
+    isTargetHKL=true;
+    showHKL=false;
+    context.strokeStyle = fundamental_color;
     let Ht=Number(document.getElementById("Ht").value);
     let Kt=Number(document.getElementById("Kt").value);
     let Lt=Number(document.getElementById("Lt").value);
 
-    for(let i=0;i<3;i++){
-        Ghkl[i]=Ht*a_star[i]+Kt*b_star[i]+Lt*c_star[i];
-    }
-
-    let notAccessible = false;
+    let isAccessible = false;
 
     if(check_ReflectionCondition(RefCon,Ht,Kt,Lt)==false){
         document.getElementById("Q_len").innerHTML="[forbidden]";
@@ -339,45 +349,13 @@ function draw_DetMap(){
         document.getElementById("lambda").innerHTML="[forbidden]";
     }
     else if(((Ht==0)&&(Kt==0)&&(Lt==0))||(Ghkl[0]>=0.0)){
-        notAccessible=true;
+        isAccessible=false;
     }
     else{
-        let G_sq = Ghkl[0]**2.0+Ghkl[1]**2.0+Ghkl[2]**2.0;
-        let Ki = -0.5*G_sq/Ghkl[0]; // Ki >0
-        lambda = 2.0*Math.PI/Ki;    // Angstrome
-
-        if(lambda > 2.0*Math.PI/Math.sqrt(Ei_max/2.072)){   // lambda_min=2PI/sqrt(Ei_max/2.072)
-
-            phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
-            phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
-
-            let PosX=det2posX(phih2det(phih));
-            let PosY=scaleY*(HD+LD/2-calcL20(phih2det(phih))*Math.tan(phiv))/LD
-
-            if(PosX>=0 && PosX<scaleX && PosY >= 0 && PosY <=scaleY){
-                context.beginPath();
-                context.arc(PosX,PosY, radius_tgt, 0, 2 * Math.PI);
-                context.stroke();
-                let phi_deg = Math.asin(Math.sqrt(G_sq)/(2.0*Ki))*2.0/Math.PI*180.0;
-                let phih_deg = phih/Math.PI*180.0;
-
-                document.getElementById("Q_len").innerHTML=Math.round(Math.sqrt(G_sq)*decimal_digit)/decimal_digit;
-                document.getElementById("phi").innerHTML=Math.round(phi_deg*decimal_digit)/decimal_digit;
-                document.getElementById("phih").innerHTML=Math.round(phih_deg*decimal_digit)/decimal_digit;
-                document.getElementById("lambda").innerHTML=Math.round(lambda*decimal_digit)/decimal_digit;
-    
-            }
-            else{
-                notAccessible=true;
-            }
-
-        }
-        else{
-            notAccessible=true;
-        }
+        isAccessible=drawBraggReflection(context,Ht,Kt,Lt,isTargetHKL,showHKL);
     }
 
-    if(notAccessible==true){
+    if(isAccessible==false){
         document.getElementById("Q_len").innerHTML="[not accessible]";
         document.getElementById("phi").innerHTML="[not accessible]";
         document.getElementById("phih").innerHTML="[not accessible]";
@@ -387,7 +365,94 @@ function draw_DetMap(){
 
 }
 
+function drawBraggReflection(context1,H1,K1,L1,isTargetHKL1,showHKL1){
 
+    let return_value=false;
+
+    let Ghkl=new Array(3);
+
+    for(let i=0;i<3;i++){
+        Ghkl[i]=H1*a_star[i]+K1*b_star[i]+L1*c_star[i];
+    }
+    if(Ghkl[0]>=0.0){
+        // Bragg's law is not satisfied.
+    }
+    else{  
+        let G_sq = Ghkl[0]**2.0+Ghkl[1]**2.0+Ghkl[2]**2.0;
+        let Ki = -0.5*G_sq/Ghkl[0]; // Ki >0
+        lambda = 2.0*Math.PI/Ki;    // Angstrome
+        let Ei_hkl = 2.072*Ki**2.0;
+
+        if(Ei_hkl<Ei_max && isDarkEi(Ei_hkl)==false){   // lambda_min=2PI/sqrt(Ei_max/2.072)
+
+            phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
+            phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
+
+            let PosX=det2posX(phih2det(phih));
+            let PosY=scaleY*(HD+LD/2-calcL20(phih2det(phih))*Math.tan(phiv))/LD
+
+            if(PosX>=0 && PosX<scaleX && PosY >= 0 && PosY <=scaleY){
+                context1.beginPath();
+
+                if(isTargetHKL1==true){
+                    let phi_deg = Math.asin(Math.sqrt(G_sq)/(2.0*Ki))*2.0/Math.PI*180.0;
+                    let phih_deg = phih/Math.PI*180.0;
+        
+                    document.getElementById("Q_len").innerHTML=Math.round(Math.sqrt(G_sq)*decimal_digit)/decimal_digit;
+                    document.getElementById("phi").innerHTML=Math.round(phi_deg*decimal_digit)/decimal_digit;
+                    document.getElementById("phih").innerHTML=Math.round(phih_deg*decimal_digit)/decimal_digit;
+                    document.getElementById("lambda").innerHTML=Math.round(lambda*decimal_digit)/decimal_digit;        
+                    context1.arc(PosX,PosY, radius_tgt, 0, 2 * Math.PI);
+                }
+                else{
+                    context1.arc(PosX,PosY, radius, 0, 2 * Math.PI);
+                }
+                context1.stroke();
+
+                if(showHKL1==true){
+                    context1.fillText(String(H1)+String(K1)+String(L1), PosX, PosY+txt_ofst1);
+                }
+
+                return_value=true;
+            }
+        }
+    }
+    
+    return return_value;
+
+}
+
+function isDarkEi(Ei_hkl){
+    switch(document.getElementById("T0_freq").value){
+        case "T0_25Hz":
+            if((Ei_hkl > 160.0)){
+                return true;
+            }
+            else{
+                return false;
+            }
+            break;
+        case "T0_50Hz":
+            if((Ei_hkl > 700.0)||((Ei_hkl<4.9)&&(Ei_hkl>3.8))){
+                return true;
+            }
+            else{
+                return false;
+            }
+            break;
+        case "T0_100Hz":
+            if((Ei_hkl > 2600.0) ||((Ei_hkl<70.0)&&(Ei_hkl>40.0))||((Ei_hkl<4.60)&&(Ei_hkl>4.0))){
+                return true;
+            }
+            else{
+                return false;
+            }
+            break;
+        default:
+            return false;
+    }
+
+}
 
 function rot_Lattice(rot_ax_dir){
     let deg = 0.0;

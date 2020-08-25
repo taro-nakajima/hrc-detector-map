@@ -5,7 +5,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
 <meta charset="UTF-8">
 </head>
-<body onload="draw()">
+<body onload="init_draw()">
     <div class="fullbox">
     <table class="header_table">
         <tr>
@@ -54,9 +54,10 @@
                         <i>&alpha;</i> = <input size="5" id="alpha" value="90"> deg., 
                         <i>&beta;</i> = <input size="5" id="beta" value="90"> deg.,
                         <i>&gamma;</i> = <input size="5" id="gamma" value="90"> deg.<br />  
+                        <input type="button" value="   Set lattice  " onclick="draw()"/><br />
                         <br />
                         <b>Reflection condition</b><br />
-                        <select id="RefCon">
+                        <select id="RefCon" onchange="set_RefCon_and_draw()">
                             <option value="none" selected>none</option>
                             <option value="H+K=2n">H+K=2n</option>
                             <option value="H+L=2n">H+L=2n</option>
@@ -72,16 +73,15 @@
                         <b><i>v</i></b> = [<input size="6" id="v1" value="0">,<input size="6" id="v2" value="1">,<input size="6" id="v3" value="0">]<br />
                         (<b><i>u</i></b>: diraction parallel to incident beam. <br />
                         <b><i>v</i></b>: another direction in the beam horizontal plane.) <br />
+                        <input type="button" value="   Set orientation  " onclick="draw()"/><br />
                         <br />
 
-                        <b>q-vectors </b><br />
-                        <input type="checkbox" id="q1_checkbox"><b><i>q</i></b><sub>1</sub> = (<input size="6" id="q1_h" value="0">,<input size="6" id="q1_k" value="0">,<input size="6" id="q1_l" value="0">)<br />
-                        <input type="checkbox" id="q2_checkbox"><b><i>q</i></b><sub>2</sub> = (<input size="6" id="q2_h" value="0">,<input size="6" id="q2_k" value="0">,<input size="6" id="q2_l" value="0">)<br />
-                        <input type="checkbox" id="q3_checkbox"><b><i>q</i></b><sub>3</sub> = (<input size="6" id="q3_h" value="0">,<input size="6" id="q3_k" value="0">,<input size="6" id="q3_l" value="0">)<br />
+                        <b><i>q</i>-vectors </b><br />
+                        <input type="checkbox" id="q1_checkbox" onchange="draw_DetMap()"><b><i>q</i></b><sub>1</sub> = (<input size="6" id="q1_h" value="0">,<input size="6" id="q1_k" value="0">,<input size="6" id="q1_l" value="0">), show indices<input type="checkbox" id="q1_showHKL" onchange="draw_DetMap()"><br />
+                        <input type="checkbox" id="q2_checkbox" onchange="draw_DetMap()"><b><i>q</i></b><sub>2</sub> = (<input size="6" id="q2_h" value="0">,<input size="6" id="q2_k" value="0">,<input size="6" id="q2_l" value="0">), show indices<input type="checkbox" id="q2_showHKL" onchange="draw_DetMap()"><br />
+                        <input type="checkbox" id="q3_checkbox" onchange="draw_DetMap()"><b><i>q</i></b><sub>3</sub> = (<input size="6" id="q3_h" value="0">,<input size="6" id="q3_k" value="0">,<input size="6" id="q3_l" value="0">), show indices<input type="checkbox" id="q3_showHKL" onchange="draw_DetMap()"><br />
                         <br />
 
-                        <input type="button" value="   Set parameters  " onclick="draw()"/><br />
-                        <br />
 
                         <div class="section_02">Incident Neutron Beam </div>
                         <b><i>E</i><sub>i</sub> max</b><br />
@@ -96,14 +96,17 @@
                             </tr>
                         </table>
                         <br />
-                        <b>Dark &lambda;-range due to T<sub>0</sub> chopper</b><br />
-                            <select id="T0_freq">
-                                <option value="T0_25Hz">25 Hz</option>
-                                <option value="T0_50Hz" selected>50Hz</option>
-                                <option value="T0_100Hz">100Hz</option>
+                        <b>Dark <i>E</i><sub>i</sub>-range due to T<sub>0</sub> chopper</b><br />
+                            <select id="T0_freq" onchange="draw_DetMap()">
+                                <option value="T0_25Hz">25 Hz (Ei > 160 meV)</option>
+                                <option value="T0_50Hz" selected>50Hz (Ei > 700 meV, 4.9 > Ei > 3.8 meV)</option>
+                                <option value="T0_100Hz">100Hz (Ei > 2.6 eV, 70 > Ei > 40 meV, 4.6 > Ei > 4 meV</option>
                             </select><br />
                             <br />
-    
+
+                        <div class="section_02">Sample position </div>
+                        <b>Vertical offset</b><br />
+
         
 
 
