@@ -105,15 +105,16 @@
                             <br />
     
         
-                        <div class="section_02">Load observed Laue pattern </div>
-                        <input type="file" onchange="getFile(this.files)"><br />
-                        <input type="button" value="   Remove file  " onclick="removeFile()">
 
 
                     </div>
                     <div id="panel2" class="tab_panel">
 
                         <!-- for panel 2 "Simulation"--------------------------------------------->
+                        <div class="section_02">Load observed Laue pattern </div>
+                        <input type="file" onchange="getFile(this.files)"><br />
+                        <input type="button" value="   Remove file  " onclick="removeFile()"><br />
+                        <br />
 
                         <div class="section_02">Sample rotation </div>
                         <input size="5" id="rot_x_deg" value="1"> deg. <input type="button" value="  rotate x+  " id="rot_x_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate x-  " id="rot_x_minus" onclick="rot_and_draw(this.id)" /><br />
