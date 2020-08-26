@@ -106,7 +106,8 @@
 
                         <div class="section_02">Sample position </div>
                         <b>Vertical offset</b><br />
-
+                        <input size="5" value="0" id="HD"> mm <input type="button" value=" set " onclick="set_SamPos_and_draw()"/><br />
+                        difference in height between sample and the center of the detector tubes. 
         
 
 
@@ -138,8 +139,11 @@
 
                         <table>
                             <tr>
+                                <td rowspan="3" width="3" class="matrix_left"></td>
                                 <td><i>Q</i><sub>x</sub></td>
+                                <td rowspan="3" width="3" class="matrix_right"></td>
                                 <td></td>
+                                <td rowspan="3" width="3" class="matrix_left"></td>
                                 <td>
                                     <input type="text" size="5" id="as_x">
                                 </td>
@@ -149,7 +153,10 @@
                                 <td>
                                     <input type="text" size="5" id="cs_x">
                                 </td>
+                                <td rowspan="3" width="3" class="matrix_right"></td>
+                                <td rowspan="3" width="3" class="matrix_left"></td>
                                 <td><i>H</i></td>
+                                <td rowspan="3" width="3" class="matrix_right"></td>
                             </tr>
                             <tr>
                                 <td><i>Q</i><sub>y</sub></td>

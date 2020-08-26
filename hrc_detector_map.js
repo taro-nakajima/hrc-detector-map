@@ -13,7 +13,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.7.1";
+var version = "0.7.2";
 
 // dimensions of the canvas object
 var scaleX=800;
@@ -29,7 +29,7 @@ const radius_tgt=8;     //// radius of a circle showing a target refletions in t
 const txt_ofst1=radius+10;   //offset along Y direction for indices shown near each reflection.
 const txt_ofst2=3;   //offset along X direction for detector number shown bottom.
 const fundamental_color="rgb(250, 250, 0)";
-const q_vec_colors = ["rgb(250, 100, 100)","rgb(110, 110, 200)","rgb(110, 250, 10)"];
+const q_vec_colors = ["rgb(50, 220, 50)","rgb(50, 150, 250)","rgb(250, 150, 100)"];
 
 //variables for calculating Laue diffraction patterns.-------------------
 var u = new Array(3); // indices, pallarel to the incident beam
@@ -98,7 +98,6 @@ function init_draw(){
     draw();
 }
 
-
 function draw() {
 
     set_Lattice();
@@ -107,6 +106,11 @@ function draw() {
     Ei_max_adjust_and_draw();
     draw_OriViewer();
 
+}
+
+function set_SamPos_and_draw(){
+    HD=Number(document.getElementById("HD").value);
+    draw_DetMap();
 }
 
 function set_RefCon_and_draw(){

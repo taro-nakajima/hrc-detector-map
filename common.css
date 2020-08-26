@@ -300,3 +300,20 @@ input[type="radio"]{display:none;}
 #tab1:checked ~ .panel_area #panel1{display:block;}
 #tab2:checked ~ .tab_area .tab2_label{background:#808080; color:#fff;}
 #tab2:checked ~ .panel_area #panel2{display:block;}
+
+
+.matrix_left{
+	border-style     : solid;
+	border-width     : 1px 0 1px 1px;
+	border-color     : #000;
+	border-top-left-radius:10px;
+	border-bottom-left-radius:10px;
+}
+
+.matrix_right{
+	border-style     : solid;
+	border-width     : 1px 1px 1px 0px;
+	border-color     : #000;
+	border-top-right-radius:10px;
+	border-bottom-right-radius:10px;
+}
