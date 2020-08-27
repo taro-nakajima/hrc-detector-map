@@ -13,21 +13,25 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.6.1";
+var version = "0.7.3";
 
-var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
-var decimal_digit=1000;     // decimal digit for UBmatrix
+// dimensions of the canvas object
+var scaleX=800;
+var scaleY=500;
 
-var X0 = 0;
-var Y0 = 250;
-var length1=200;    //unused variable 
+//physical constant
+const TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 
-var radius=5;
+//parameters for the appearance of the simulation
+const decimal_digit=1000;     // decimal digit for UBmatrix
+const radius=5;       // radius of circles showing refletions in the simulation.
+const radius_tgt=8;     //// radius of a circle showing a target refletions in the simulation.
+const txt_ofst1=radius+10;   //offset along Y direction for indices shown near each reflection.
+const txt_ofst2=3;   //offset along X direction for detector number shown bottom.
+const fundamental_color="rgb(250, 250, 0)";
+const q_vec_colors = ["rgb(50, 220, 50)","rgb(50, 150, 250)","rgb(250, 150, 100)"];
 
-var HD = 40;    // height of center of PSD from incident beam (mm)
-var LD = 2800;  // length of PSD (mm)
-var L20 = 4000; // distance from sample to PSD in horizontal plane (mm)
-
+//variables for calculating Laue diffraction patterns.-------------------
 var u = new Array(3); // indices, pallarel to the incident beam
 var v = new Array(3); // indices, another direction in the horizontal plane including the incidnet beam
 
@@ -39,13 +43,11 @@ var Rot1 = new Array(3);
 var Rot2 = new Array(3);
 var Rot =[Rot0, Rot1, Rot2];    // 3x3 rotation matrix
 
-// unit vector of primitive translation vectors
-var a_unit = new Array(3);
+var a_unit = new Array(3);  // unit vector of primitive translation vectors
 var b_unit = new Array(3);
 var c_unit = new Array(3);
 
-// reciprocal lattice vectors
-var a_star = new Array(3);
+var a_star = new Array(3);  // reciprocal lattice vectors
 var b_star = new Array(3);
 var c_star = new Array(3);
 
@@ -55,9 +57,6 @@ var cs_len;
 
 var RefCon = '';
 
-//var H;
-//var K;
-//var L;
 var Hmax;
 var Kmax;
 var Lmax;
@@ -66,13 +65,13 @@ var Ei_max = 600;
 
 var phih;
 var phiv;
+var lambda;             // wavelength 
 
-var lambda;             // wavelength for Q-vector
-var maxphih = 60.0;     // maximum of the phi angle on the horizontal plane
-//var maxphiv = 60.0;
-var scaleX=800;
-var scaleY=500;
-
+//parameters regarding the detector banks
+var HD = 0;    // height of center of PSD from incident beam (mm)
+var LD = 2800;  // length of PSD (mm)
+const LB20 = 4004.0 // distance from sample to the center of high-angle detector bank
+const widthB = 1324.87 // full width of detector array for a bank
 const BankAngleMin = [0.049428538, 0.407221034, 0.765013531, -0.544643747]; // angles of the right edge of the detector banks (rad)
 const BankAngleMax = [0.378498924, 0.736291421, 1.094083918, -0.215347289]; // angles of the left edge of the detector banks (rad)
 const Coefphihvsdet0 = [-0.606141374, -0.577419264, -0.548697154, -2.188553408];    // 0th-order coefficients for  phih vs detector 
@@ -82,37 +81,48 @@ const DetMax = 384; // maximum of detector number for drawing plus 1
 const numDetinBank = 64; // number of detectors in each bank
 
 //variables for 3D orientation viewer
-var arrow_scale = 150;        //arrows for a*, b* and c*: convert A-1 to pixel.
-var arrow_HeadLen = 20;       //lengths of arrowheads (pixel)
-var arrow_HeadWidth = 10;     //widths of arrowheads (pixel)
-var DetBankAngles = [12.25/180.0*Math.PI, 32.75/180.0*Math.PI, 53.2/180.0*Math.PI, -21.8/180.0*Math.PI];   //angles of the centers of the detector banks (rad)
-var DetBankWidth = 1300;  // width of the detector banks (mm)
-var DetBankScale = 0.1;   // convert mm to pixel.
+const arrow_scale = 120;        //arrows for a*, b* and c*: convert A-1 to pixel.
+const arrow_HeadLen = 20;       //lengths of arrowheads (pixel)
+const arrow_HeadWidth = 10;     //widths of arrowheads (pixel)
+const DetBankScale = 0.1;   // convert mm to pixel.
+const DetBankThickness = 50; //pixel
 
 //variable for loading observed Laue image.
 var imageLoaded=false;
 var imageURL;
 var image = new Image();
 
-
-function draw() {
+function init_draw(){
     document.getElementById("verNum").innerHTML=version;
     document.getElementById("verNum2").innerHTML=version;
+    set_SamplePosition();
+    draw();
+}
+
+function draw() {
 
     set_Lattice();
     set_ReflectionCondition();
     showUBmatrix();
     Ei_max_adjust_and_draw();
-    //draw_DetMap();
     draw_OriViewer();
 
+}
+
+function set_SamPos_and_draw(){
+    set_SamplePosition();
+    draw_DetMap();
+}
+
+function set_RefCon_and_draw(){
+    set_ReflectionCondition();
+    draw_DetMap();
 }
 
 function rot_and_draw(rot_ax_dir) {
     rot_Lattice(rot_ax_dir);
     showUBmatrix();
-    Ei_max_adjust_and_draw();
-    //draw_DetMap();
+    draw_DetMap();
     draw_OriViewer();
 }
 
@@ -120,7 +130,6 @@ function Ei_max_adjust_and_draw(){
     document.getElementById("Ei_max_disp").value = document.getElementById("Ei_max").value;
     Ei_max = Number(document.getElementById("Ei_max").value);
     draw_DetMap();
-
 }
 
 function set_Lattice(){
@@ -238,8 +247,13 @@ function check_ReflectionCondition(RefCon,H,K,L){
             }
             break;
         default:
+            retstr=true;
     }
     return retstr;
+}
+
+function set_SamplePosition(){
+    HD=Number(document.getElementById("HD").value);
 }
 
 function draw_DetMap(){
@@ -257,6 +271,11 @@ function draw_DetMap(){
     context.fillStyle = "rgb(0, 0, 100)";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
+    //show observed Laue pattern
+    if(imageLoaded==true){
+        context.drawImage(image, 0, 0);
+    }
+
     //display bank gaps
     context.strokeStyle ="white";
     context.fillStyle = "white";
@@ -265,19 +284,14 @@ function draw_DetMap(){
     for(let det=DetMin; det<DetMax; det+=numDetinBank){
         context.moveTo(det2posX(det), 0);
         context.lineTo(det2posX(det),scaleY);
-        context.fillText(det, det2posX(det)+3, scaleY);
+        context.fillText(det, det2posX(det)+txt_ofst2, scaleY);
     }
     context.stroke();
     
 
-    if(imageLoaded==true){
-        context.drawImage(image, 0, 0);
-    }
-    
-
     // color setting for circles indicating reflections
-    context.strokeStyle = "rgb(250, 250, 0)";
-    context.fillStyle = "rgb(250, 250, 0)";
+    context.strokeStyle = fundamental_color;
+    context.fillStyle = fundamental_color;
     context.lineWidth=2;
     context.font = "10px sans-serif";
 
@@ -286,10 +300,9 @@ function draw_DetMap(){
     Kmax = Math.floor(Qmax/bs_len);
     Lmax = Math.floor(Qmax/cs_len);
 
-    //context.fillText(check_Extinction('H+K=2n',-2,4,10), 100, 100);   // display value for check
-
-    var Ghkl=new Array(3);
-
+    let Ghkl=new Array(3);
+    let isTargetHKL=false;
+    let showHKL=false;
     for (var H=-Hmax;H<=Hmax;H+=1){
         for (var K=-Kmax;K<=Kmax;K+=1){
             for (var L=-Lmax;L<=Lmax;L+=1){
@@ -298,46 +311,157 @@ function draw_DetMap(){
                     // Reflection condition is not satisfied or H=K=L=0.
                 }
                 else{
-                    for(let i=0;i<3;i++){
-                        Ghkl[i]=H*a_star[i]+K*b_star[i]+L*c_star[i];
-                    }
-                    if(Ghkl[0]>=0.0){
-                        // Bragg's law is not satisfied.
-                    }
-                    else{  
-                        let G_sq = Ghkl[0]**2.0+Ghkl[1]**2.0+Ghkl[2]**2.0;
-                        let Ki = -0.5*G_sq/Ghkl[0]; // Ki >0
-                        lambda = 2.0*Math.PI/Ki;    // Angstrome
-                        //lambda = Math.abs(4.0*Math.PI*Ghkl[0]/G_sq);
+                    // funcamental reflections
+                    context.strokeStyle = fundamental_color;
+                    context.fillStyle = fundamental_color;
+                    showHKL=true;
+                    drawBraggReflection(context,H,K,L,isTargetHKL,showHKL);
 
-                        if(lambda > 2.0*Math.PI/Math.sqrt(Ei_max/2.072)){   // lambda_min=2PI/sqrt(Ei_max/2.072)
-
-                            phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
-                            phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
-
-                            let PosX=det2posX(phih2det(phih));
-                            let PosY=scaleY*(HD+LD/2-L20*Math.tan(phiv))/LD
-
-                            context.beginPath();
-                            context.arc(PosX,PosY, radius, 0, 2 * Math.PI);
-                            context.stroke();
-
-                            context.fillText(String(H)+String(K)+String(L), PosX, PosY+15);
+                    // reflections with q-vectors
+                    for(let p=0;p<q_vec_colors.length;p++){
+                        let cb_label = 'q'+(p+1)+'_checkbox';
+                        let qh_label = 'q'+(p+1)+'_h';
+                        let qk_label = 'q'+(p+1)+'_k';
+                        let ql_label = 'q'+(p+1)+'_l';
+                        let showHKL_label = 'q'+(p+1)+'_showHKL';
+                        if(document.getElementById(cb_label).checked==true){
+                            context.strokeStyle = q_vec_colors[p];
+                            context.fillStyle = q_vec_colors[p];
+                            showHKL=document.getElementById(showHKL_label).checked;
+                            let q1_H = Number(document.getElementById(qh_label).value); 
+                            let q1_K = Number(document.getElementById(qk_label).value); 
+                            let q1_L = Number(document.getElementById(ql_label).value); 
+                            drawBraggReflection(context,H+q1_H,K+q1_K,L+q1_L,isTargetHKL,showHKL);
+                            drawBraggReflection(context,H-q1_H,K-q1_K,L-q1_L,isTargetHKL,showHKL);    
                         }
-                    }  
+    
+                    }
                 }
             }
         }
     }
 
-    
+    //draw large circle for the target reflection.
+    isTargetHKL=true;
+    showHKL=false;
+    context.strokeStyle = fundamental_color;
+    let Ht=Number(document.getElementById("Ht").value);
+    let Kt=Number(document.getElementById("Kt").value);
+    let Lt=Number(document.getElementById("Lt").value);
 
-//text for debug
-//  context.font = "italic 13px sans-serif";
-//  context.fillText(lambda, X0, Y0);
+    let isAccessible = false;
+
+    if(check_ReflectionCondition(RefCon,Ht,Kt,Lt)==false){
+        document.getElementById("Q_len").innerHTML="[forbidden]";
+        document.getElementById("phi").innerHTML="[forbidden]";
+        document.getElementById("phih").innerHTML="[forbidden]";
+        document.getElementById("lambda").innerHTML="[forbidden]";
+    }
+    else if(((Ht==0)&&(Kt==0)&&(Lt==0))||(Ghkl[0]>=0.0)){
+        isAccessible=false;
+    }
+    else{
+        isAccessible=drawBraggReflection(context,Ht,Kt,Lt,isTargetHKL,showHKL);
+    }
+
+    if(isAccessible==false){
+        document.getElementById("Q_len").innerHTML="[not accessible]";
+        document.getElementById("phi").innerHTML="[not accessible]";
+        document.getElementById("phih").innerHTML="[not accessible]";
+        document.getElementById("lambda").innerHTML="[not accessible]";
+    }
+
+
 }
 
+function drawBraggReflection(context1,H1,K1,L1,isTargetHKL1,showHKL1){
 
+    let return_value=false;
+
+    let Ghkl=new Array(3);
+
+    for(let i=0;i<3;i++){
+        Ghkl[i]=H1*a_star[i]+K1*b_star[i]+L1*c_star[i];
+    }
+    if(Ghkl[0]>=0.0){
+        // Bragg's law is not satisfied.
+    }
+    else{  
+        let G_sq = Ghkl[0]**2.0+Ghkl[1]**2.0+Ghkl[2]**2.0;
+        let Ki = -0.5*G_sq/Ghkl[0]; // Ki >0
+        lambda = 2.0*Math.PI/Ki;    // Angstrome
+        let Ei_hkl = 2.072*Ki**2.0;
+
+        if(Ei_hkl<Ei_max && isDarkEi(Ei_hkl)==false){   // lambda_min=2PI/sqrt(Ei_max/2.072)
+
+            phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
+            phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
+
+            let PosX=det2posX(phih2det(phih));
+            let PosY=scaleY*(HD+LD/2-calcL20(phih2det(phih))*Math.tan(phiv))/LD
+
+            if(PosX>=0 && PosX<scaleX && PosY >= 0 && PosY <=scaleY){
+                context1.beginPath();
+
+                if(isTargetHKL1==true){
+                    let phi_deg = Math.asin(Math.sqrt(G_sq)/(2.0*Ki))*2.0/Math.PI*180.0;
+                    let phih_deg = phih/Math.PI*180.0;
+        
+                    document.getElementById("Q_len").innerHTML=Math.round(Math.sqrt(G_sq)*decimal_digit)/decimal_digit;
+                    document.getElementById("phi").innerHTML=Math.round(phi_deg*decimal_digit)/decimal_digit;
+                    document.getElementById("phih").innerHTML=Math.round(phih_deg*decimal_digit)/decimal_digit;
+                    document.getElementById("lambda").innerHTML=Math.round(lambda*decimal_digit)/decimal_digit;        
+                    context1.arc(PosX,PosY, radius_tgt, 0, 2 * Math.PI);
+                }
+                else{
+                    context1.arc(PosX,PosY, radius, 0, 2 * Math.PI);
+                }
+                context1.stroke();
+
+                if(showHKL1==true){
+                    context1.fillText(String(H1)+String(K1)+String(L1), PosX, PosY+txt_ofst1);
+                }
+
+                return_value=true;
+            }
+        }
+    }
+    
+    return return_value;
+
+}
+
+function isDarkEi(Ei_hkl){
+    switch(document.getElementById("T0_freq").value){
+        case "T0_25Hz":
+            if((Ei_hkl > 160.0)){
+                return true;
+            }
+            else{
+                return false;
+            }
+            break;
+        case "T0_50Hz":
+            if((Ei_hkl > 700.0)||((Ei_hkl<4.9)&&(Ei_hkl>3.8))){
+                return true;
+            }
+            else{
+                return false;
+            }
+            break;
+        case "T0_100Hz":
+            if((Ei_hkl > 2600.0) ||((Ei_hkl<70.0)&&(Ei_hkl>40.0))||((Ei_hkl<4.60)&&(Ei_hkl>4.0))){
+                return true;
+            }
+            else{
+                return false;
+            }
+            break;
+        default:
+            return false;
+    }
+
+}
 
 function rot_Lattice(rot_ax_dir){
     let deg = 0.0;
@@ -409,51 +533,35 @@ function draw_OriViewer(){
   
     // カメラを作成
     const camera = new THREE.PerspectiveCamera(30, width / height);
-    camera.position.set(-800, 800, 800);
+    let cam_theta=Number(document.getElementById("cam_theta").value);
+    let cam_phi=Number(document.getElementById("cam_phi").value);
+    let cam_len=1200;
+    camera.position.set(cam_len*Math.sin(Math.PI/180.0*cam_theta)*Math.sin(Math.PI/180.0*cam_phi), cam_len*Math.cos(Math.PI/180.0*cam_theta), cam_len*Math.sin(Math.PI/180.0*cam_theta)*Math.cos(Math.PI/180.0*cam_phi));
     camera.lookAt(new THREE.Vector3(0, 0, 0));
   
     //note: 
     //HRC coordinates (x(||ki),y,z(vertical)) 
     //THREE.js coordinates (x3,y3,z3) 
     //transformation : x3=x, y3=z, z3=-y  
-    // detector bank 1
-    const geometry1 = new THREE.BoxGeometry(50.0, LD*DetBankScale, DetBankWidth*DetBankScale);
+    // detector banks
     const material1 = new THREE.MeshStandardMaterial({ color: 0xC0C0C0 });  // color of detector bank
-    const mesh1 = new THREE.Mesh(geometry1, material1);
-    scene.add(mesh1);
-    mesh1.rotation.y += DetBankAngles[0];       //rotation about the y axis.
-    mesh1.position.x += L20*DetBankScale*Math.cos(DetBankAngles[0]);    // move along the x axis.
-    mesh1.position.z -= L20*DetBankScale*Math.sin(DetBankAngles[0]);    // move along the z axis.
-  
-    // detector bank 2
-    const geometry2 = new THREE.BoxGeometry(50.0, LD*DetBankScale, DetBankWidth*DetBankScale);
-    const mesh2 = new THREE.Mesh(geometry2, material1);
-    scene.add(mesh2);
-    mesh2.rotation.y += DetBankAngles[1];
-    mesh2.position.x += L20*DetBankScale*Math.cos(DetBankAngles[1]);
-    mesh2.position.z -= L20*DetBankScale*Math.sin(DetBankAngles[1]);
-  
-    // detector bank 3
-    const geometry3 = new THREE.BoxGeometry(50.0, LD*DetBankScale, DetBankWidth*DetBankScale);
-    const mesh3 = new THREE.Mesh(geometry3, material1);
-    scene.add(mesh3);
-    mesh3.rotation.y += DetBankAngles[2];
-    mesh3.position.x += L20*DetBankScale*Math.cos(DetBankAngles[2]);
-    mesh3.position.z -= L20*DetBankScale*Math.sin(DetBankAngles[2]);
-  
-    // detector bank 4
-    const geometry4 = new THREE.BoxGeometry(50.0, LD*DetBankScale, DetBankWidth*DetBankScale);
-    const mesh4 = new THREE.Mesh(geometry4, material1);
-    scene.add(mesh4);
-    mesh4.rotation.y += DetBankAngles[3];
-    mesh4.position.x += L20*DetBankScale*Math.cos(DetBankAngles[3]);
-    mesh4.position.z -= L20*DetBankScale*Math.sin(DetBankAngles[3]);
-  
-    // detector bank 4
-    const geometry5 = new THREE.BoxGeometry(2000,50,50);
-    const mesh5 = new THREE.Mesh(geometry5, material1);
-    scene.add(mesh5);
-    mesh5.position.x -= 1300;
+    let geometry = new Array(BankAngleMin.length);
+    let mesh = new Array(BankAngleMin.length);
+
+    for (let i=0;i<BankAngleMin.length;i++){
+        geometry[i] = new THREE.BoxGeometry(DetBankThickness, LD*DetBankScale, widthB*DetBankScale);
+        mesh[i] = new THREE.Mesh(geometry[i], material1);
+        scene.add(mesh[i]);
+        mesh[i].rotation.y += (BankAngleMin[i]+BankAngleMax[i])/2.0;       //rotation about the y axis.
+        mesh[i].position.x += LB20*DetBankScale*Math.cos((BankAngleMin[i]+BankAngleMax[i])/2.0);    // move along the x axis.
+        mesh[i].position.z -= LB20*DetBankScale*Math.sin((BankAngleMin[i]+BankAngleMax[i])/2.0);    // move along the z axis.    
+    }
+
+    // guide for the incident beam
+    const geometry_guide = new THREE.BoxGeometry(2000,50,50);
+    const mesh_guide = new THREE.Mesh(geometry_guide, material1);
+    scene.add(mesh_guide);
+    mesh_guide.position.x -= 1300;
     
     //draw a*, b*, c*
     //a*
@@ -493,12 +601,10 @@ function draw_OriViewer(){
   //  scene.add(pointLightHelper);
   
     renderer.render(scene, camera);
-  //  tick();
   
   }
 
 function getFile(e){
-//    console.log(e[0]);  //for debug
     let reader = new FileReader();
     reader.readAsDataURL(e[0]);
     reader.onload = function() {
@@ -512,7 +618,6 @@ function getFile(e){
 
 
 function removeFile(){
-    //    console.log(e[0]);  //for debug
     imageLoaded=false;
     draw_DetMap();         
 }
@@ -543,4 +648,8 @@ function phih2det(phih){    // convert phih to detector number
 
 function det2posX(det){     // convert detector number to x-axis of detector map
     return scaleX*(det-DetMin)/(DetMax-DetMin)
+}
+
+function calcL20(det){      // calculate L20 
+    return Math.sqrt(LB20**2.0+(widthB*(0.5-((det%numDetinBank)+0.5)/numDetinBank))**2.0)
 }
