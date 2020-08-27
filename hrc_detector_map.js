@@ -13,7 +13,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.7.2";
+var version = "0.7.3";
 
 // dimensions of the canvas object
 var scaleX=800;
@@ -95,6 +95,7 @@ var image = new Image();
 function init_draw(){
     document.getElementById("verNum").innerHTML=version;
     document.getElementById("verNum2").innerHTML=version;
+    set_SamplePosition();
     draw();
 }
 
@@ -109,7 +110,7 @@ function draw() {
 }
 
 function set_SamPos_and_draw(){
-    HD=Number(document.getElementById("HD").value);
+    set_SamplePosition();
     draw_DetMap();
 }
 
@@ -249,6 +250,10 @@ function check_ReflectionCondition(RefCon,H,K,L){
             retstr=true;
     }
     return retstr;
+}
+
+function set_SamplePosition(){
+    HD=Number(document.getElementById("HD").value);
 }
 
 function draw_DetMap(){
