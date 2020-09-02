@@ -71,9 +71,15 @@
                         <b>Orientation </b><br />
                         <b><i>u</i></b> = [<input size="6" id="u1" value="1">,<input size="6" id="u2" value="0">,<input size="6" id="u3" value="0">]<br />
                         <b><i>v</i></b> = [<input size="6" id="v1" value="0">,<input size="6" id="v2" value="1">,<input size="6" id="v3" value="0">]<br />
-                        (<b><i>u</i></b>: diraction parallel to incident beam. <br />
-                        <b><i>v</i></b>: another direction in the beam horizontal plane.) <br />
-                        <input type="button" value="   Set orientation  " onclick="draw()"/><br />
+                            <b><i>u</i></b>: diraction parallel to incident beam when &Psi; = 0(deg.). <br />
+                            <b><i>v</i></b>: another direction in the beam horizontal plane. <br />
+                        <br />
+
+                        <b>Goniometer angle (&Psi;) </b><br />
+                        <input size="5" value="0" id="Psi"> deg. <!--<input type="button" value=" set " onclick="rotate_Gonio_and_draw()"/>--><br />
+                        <br />
+                        
+                        <input type="button" value="  Set orientation matrix  " onclick="draw()"/><br />
                         <br />
 
                         <b><i>q</i>-vectors </b><br />
@@ -120,7 +126,8 @@
                         <input type="button" value="   Remove file  " onclick="removeFile()"><br />
                         <br />
 
-                        <div class="section_02">Sample rotation </div>
+                        <div class="section_02">Sample rotation</div>
+                        <!-- <b>Adjusting rotation</b><br /> -->
                         <input size="5" id="rot_x_deg" value="1"> deg. <input type="button" value="  rotate x+  " id="rot_x_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate x-  " id="rot_x_minus" onclick="rot_and_draw(this.id)" /><br />
                         <input size="5" id="rot_y_deg" value="1"> deg. <input type="button" value="  rotate y+  " id="rot_y_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate y-  " id="rot_y_minus" onclick="rot_and_draw(this.id)" /><br />
                         <input size="5" id="rot_z_deg" value="1"> deg. <input type="button" value="  rotate z+  " id="rot_z_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate z-  " id="rot_z_minus" onclick="rot_and_draw(this.id)" /><br />

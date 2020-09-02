@@ -13,7 +13,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.7.3";
+var version = "0.8";
 
 // dimensions of the canvas object
 var scaleX=800;
@@ -67,6 +67,7 @@ var phih;
 var phiv;
 var lambda;             // wavelength 
 
+var Psi;    //  Goniometer angle
 //parameters regarding the detector banks
 var HD = 0;    // height of center of PSD from incident beam (mm)
 var LD = 2800;  // length of PSD (mm)
@@ -75,7 +76,7 @@ const widthB = 1324.87 // full width of detector array for a bank
 const BankAngleMin = [0.049428538, 0.407221034, 0.765013531, -0.544643747]; // angles of the right edge of the detector banks (rad)
 const BankAngleMax = [0.378498924, 0.736291421, 1.094083918, -0.215347289]; // angles of the left edge of the detector banks (rad)
 const Coefphihvsdet0 = [-0.606141374, -0.577419264, -0.548697154, -2.188553408];    // 0th-order coefficients for  phih vs detector 
-const Coefphihvsdet1 = 0.005141725; // 1st-order coefficients for phih vs detector, the same value for all the banks except the direct-beam bank  
+const Coefphihvsdet1 = 0.005141725; // 1st-order coefficient for phih vs detector, the same value for all the banks except the direct-beam bank  
 const DetMin = 128; // minimum of detector number for drawing 
 const DetMax = 384; // maximum of detector number for drawing plus 1
 const numDetinBank = 64; // number of detectors in each bank
@@ -102,6 +103,7 @@ function init_draw(){
 function draw() {
 
     set_Lattice();
+    rotate_Goniometer();
     set_ReflectionCondition();
     showUBmatrix();
     Ei_max_adjust_and_draw();
@@ -256,6 +258,11 @@ function set_SamplePosition(){
     HD=Number(document.getElementById("HD").value);
 }
 
+function rotate_Goniometer(){
+    Psi=Number(document.getElementById("Psi").value)/180.0*Math.PI;
+    xyz_rotation(2,-Psi)     // xyz=2 means z-axis rotation.
+}
+
 function draw_DetMap(){
 
     var canvas = document.getElementById('CanvasDetMap');
@@ -382,6 +389,7 @@ function drawBraggReflection(context1,H1,K1,L1,isTargetHKL1,showHKL1){
 
     for(let i=0;i<3;i++){
         Ghkl[i]=H1*a_star[i]+K1*b_star[i]+L1*c_star[i];
+        Ghkl[i] *=-1
     }
     if(Ghkl[0]>=0.0){
         // Bragg's law is not satisfied.
