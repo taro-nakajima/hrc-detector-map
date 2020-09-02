@@ -121,13 +121,13 @@
                         <br />
 
                         <div class="section_02">Sample rotation </div>
-                        <input type="radio" name="rotType" value="free" id="freeRot" class="rotTypeButton" onchange="setFreeRotMode()" checked><label target="freeRot"> Free rotation</label><br />
+                        <input type="radio" name="rotType" value="free" id="freeRot" class="rotTypeButton" onchange="setFreeRotMode()" checked><label target="freeRot"> <b>Free rotation</b></label><br />
                         <input size="5" id="rot_x_deg" value="1"> deg. <input type="button" value="  rotate x+  " id="rot_x_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate x-  " id="rot_x_minus" onclick="rot_and_draw(this.id)" /><br />
                         <input size="5" id="rot_y_deg" value="1"> deg. <input type="button" value="  rotate y+  " id="rot_y_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate y-  " id="rot_y_minus" onclick="rot_and_draw(this.id)" /><br />
                         <input size="5" id="rot_z_deg" value="1"> deg. <input type="button" value="  rotate z+  " id="rot_z_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate z-  " id="rot_z_minus" onclick="rot_and_draw(this.id)" /><br />
                         Set the current orientation as "&omega;=<input type="text" size=5 id="currentOmega"> deg" <input type="button" value=" set " onclick="setOmegaRotMode()"><br />
                         <br />
-                        <input type="radio" name="rotType" value="omega" id="omegaRot" class="rotTypeButton" disabled><label target="freeRot"> &omega; rotation</label><br />
+                        <input type="radio" name="rotType" value="omega" id="omegaRot" class="rotTypeButton" disabled><label target="freeRot"> <b>&omega; rotation</b></label><br />
                         Current &omega;: <font id="currentOmega_disp">0</font> deg.<br />
                         Go to &omega;= <input type="text" size=5 id="targetOmega"> deg <input type="button" value=" Go " id="omgRotGoBtn" onclick="omegaRot_and_draw()"><br />                        
 
