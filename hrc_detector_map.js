@@ -359,9 +359,10 @@ function draw_DetMap(){
     isTargetHKL=true;
     showHKL=false;
     context.strokeStyle = fundamental_color;
-    let Ht=Number(document.getElementById("Ht").value);
-    let Kt=Number(document.getElementById("Kt").value);
-    let Lt=Number(document.getElementById("Lt").value);
+    let Ht=-Number(document.getElementById("Ht").value);
+    let Kt=-Number(document.getElementById("Kt").value);
+    let Lt=-Number(document.getElementById("Lt").value);
+    //minus signs are necessary to convert Q=kf-ki to Q=ki-kf.
 
     let isAccessible = false;
 
