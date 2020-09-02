@@ -433,7 +433,9 @@ function drawBraggReflection(context1,H1,K1,L1,isTargetHKL1,showHKL1){
                 context1.stroke();
 
                 if(showHKL1==true){
-                    context1.fillText(String(H1)+String(K1)+String(L1), PosX, PosY+txt_ofst1);
+                    context1.fillText(String(-H1)+String(-K1)+String(-L1), PosX, PosY+txt_ofst1);   
+                    //Thus far, the Bragg conditions are calculated assuming that the scattering vector is defined as Q=kf-ki.
+                    //However, the correct definition of the scattering vector is Q=ki-kf, which is momentum of the excitation. Thus, "-" signs are necessary to change Q=kf-ki to Q=ki-kf.
                 }
 
                 return_value=true;
