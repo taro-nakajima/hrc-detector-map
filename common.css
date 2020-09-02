@@ -258,6 +258,10 @@ A:hover{
 
 input[type="radio"]{display:none;}
 
+input[type="radio"].rotTypeButton{
+	display:inline;
+}
+
 .tab_area{	
 	font-size:0;
 	margin:0 10px;
