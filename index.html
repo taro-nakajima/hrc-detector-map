@@ -126,11 +126,14 @@
                         <input size="5" id="rot_y_deg" value="1"> deg. <input type="button" value="  rotate y+  " id="rot_y_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate y-  " id="rot_y_minus" onclick="rot_and_draw(this.id)" /><br />
                         <input size="5" id="rot_z_deg" value="1"> deg. <input type="button" value="  rotate z+  " id="rot_z_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate z-  " id="rot_z_minus" onclick="rot_and_draw(this.id)" /><br />
                         Set the current orientation as "&omega;=<input type="text" size=5 id="currentOmega"> deg" <input type="button" value=" set " onclick="setOmegaRotMode()"><br />
+                        <div class="box2">
+                            &psi;<sub>h</sub>= -(&omega;-&omega;<sub>offset</sub>), &omega;<sub>offset</sub>=<font id="Omg_ofst"></font> deg<br />
+                        (&psi;<sub>h</sub>: angle between <b><i>k</i></b><sub>i</sub> and <b><i>u</i></b><sub>h</sub>=(<i>u</i><sub>x</sub>,<i>u</i><sub>y</sub>,0))<br />
+                        </div>
                         <br />
                         <input type="radio" name="rotType" value="omega" id="omegaRot" class="rotTypeButton" disabled><label target="freeRot"> <b>&omega; rotation</b></label><br />
                         Current &omega;: <font id="currentOmega_disp">0</font> deg.<br />
                         Go to &omega;= <input type="text" size=5 id="targetOmega"> deg <input type="button" value=" Go " id="omgRotGoBtn" onclick="omegaRot_and_draw()"><br />                        
-
                         <br />
                         <div class="section_02">Target reflection </div>
                         (<i>H</i><sub>t</sub>,<i>K</i><sub>t</sub>,<i>L</i><sub>t</sub>)=(<input size="5" id="Ht" value="0">,<input size="5" id="Kt" value="0">,<input size="5" id="Lt" value="0">)
@@ -193,9 +196,6 @@
                                 <td><i>L</i></td>
                             </tr>
                         </table>
-                        <br />
-                        &psi;<sub>h</sub>= <font id="psi_h"></font> deg<br />
-                        (angle between <b><i>k</i></b><sub>i</sub> and <b><i>u</i></b><sub>h</sub>=(<i>u</i><sub>x</sub>,<i>u</i><sub>y</sub>,0))<br />
                         <br />
                         <div class="section_02">Camera angle </div>
                         <table>

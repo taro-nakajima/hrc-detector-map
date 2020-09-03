@@ -13,7 +13,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.8.1b";
+var version = "0.8.2b";
 
 // dimensions of the canvas object
 var scaleX=800;
@@ -652,9 +652,6 @@ function showUBmatrix(){
     document.getElementById('cs_y').value = Math.round((c_star[1]*decimal_digit))/decimal_digit;
     document.getElementById('cs_z').value = Math.round((c_star[2]*decimal_digit))/decimal_digit;
 
-    let psi_h = Math.atan2((u[0]*a_star[1]+u[1]*b_star[1]+u[2]*c_star[1]),(u[0]*a_star[0]+u[1]*b_star[0]+u[2]*c_star[0]))/Math.PI*180.0;
-    console.log(psi_h);
-    document.getElementById("psi_h").innerHTML=String(Math.round((psi_h*decimal_digit))/decimal_digit);
 }
 
 //--------------------------------------
@@ -713,5 +710,9 @@ function setOmegaRotMode(){
     document.getElementById("rot_x_deg").disabled=true;
     document.getElementById("rot_y_deg").disabled=true;
     document.getElementById("rot_z_deg").disabled=true;
+
+    let psi_h = Math.atan2((u[0]*a_star[1]+u[1]*b_star[1]+u[2]*c_star[1]),(u[0]*a_star[0]+u[1]*b_star[0]+u[2]*c_star[0]))/Math.PI*180.0;
+    let Omg_ofst = Omega+psi_h;
+    document.getElementById("Omg_ofst").innerHTML=String(Math.round((Omg_ofst*decimal_digit))/decimal_digit);
 
 }
