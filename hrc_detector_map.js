@@ -321,7 +321,7 @@ function draw_DetMap(){
         for (var K=-Kmax;K<=Kmax;K+=1){
             for (var L=-Lmax;L<=Lmax;L+=1){
 
-                if(((H==0)&&(K==0)&&(L==0))||check_ReflectionCondition(RefCon,H,K,L)==false){
+                if(check_ReflectionCondition(RefCon,H,K,L)==false){
                     // Reflection condition is not satisfied or H=K=L=0.
                 }
                 else{
@@ -407,7 +407,7 @@ function drawBraggReflection(context1,H1,K1,L1,isTargetHKL1,showHKL1){
         lambda = 2.0*Math.PI/Ki;    // Angstrome
         let Ei_hkl = 2.072*Ki**2.0;
 
-        if(Ei_hkl<Ei_max && isDarkEi(Ei_hkl)==false){   // lambda_min=2PI/sqrt(Ei_max/2.072)
+        if(Ei_hkl<Ei_max && isDarkEi(Ei_hkl)==false && G_sq > 0){   // lambda_min=2PI/sqrt(Ei_max/2.072), the case that H=K=L=0 is avoided by the condition of  G_sq > 0.
 
             phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
             phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
