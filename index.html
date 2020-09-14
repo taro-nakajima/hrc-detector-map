@@ -69,8 +69,8 @@
                         <br />
         
                         <b>Orientation </b><br />
-                        <b><i>u</i></b> = [<input size="6" id="u1" value="1">,<input size="6" id="u2" value="0">,<input size="6" id="u3" value="0">]<br />
-                        <b><i>v</i></b> = [<input size="6" id="v1" value="0">,<input size="6" id="v2" value="1">,<input size="6" id="v3" value="0">]<br />
+                        <b><i>u</i></b> = (<input size="6" id="u1" value="1">,<input size="6" id="u2" value="0">,<input size="6" id="u3" value="0">)<br />
+                        <b><i>v</i></b> = (<input size="6" id="v1" value="0">,<input size="6" id="v2" value="1">,<input size="6" id="v3" value="0">)<br />
                         (<b><i>u</i></b>: diraction parallel to incident beam. <br />
                         <b><i>v</i></b>: another direction in the beam horizontal plane.) <br />
                         <input type="button" value="   Set orientation  " onclick="draw()"/><br />
@@ -88,10 +88,10 @@
                         <table>
                             <tr>
                                 <td>
-                                    <input type="range" value="500" min="10" max="1000" step="10" id="Ei_max" oninput="Ei_max_adjust_and_draw()">
+                                    <input type="range" value="300" min="10" max="1000" step="10" id="Ei_max" oninput="Ei_max_adjust_and_draw()">
                                 </td>
                                 <td>
-                                    <input size="5" value="500" id="Ei_max_disp"> meV
+                                    <input size="5" value="300" id="Ei_max_disp"> meV
                                 </td>
                             </tr>
                         </table>
@@ -106,7 +106,7 @@
 
                         <div class="section_02">Sample position </div>
                         <b>Vertical offset</b><br />
-                        <input size="5" value="0" id="HD"> mm <input type="button" value=" set " onclick="set_SamPos_and_draw()"/><br />
+                        <input size="5" value="20" id="HD"> mm <input type="button" value=" set " onclick="set_SamPos_and_draw()"/><br />
                         difference in height between sample and the center of the detector tubes. 
         
 

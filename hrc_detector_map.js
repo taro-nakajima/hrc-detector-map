@@ -13,7 +13,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.8.2b";
+var version = "0.8.3b";
 
 // dimensions of the canvas object
 var scaleX=800;
@@ -61,7 +61,7 @@ var Hmax;
 var Kmax;
 var Lmax;
 
-var Ei_max = 600;
+var Ei_max = 300;
 
 var phih;
 var phiv;
@@ -70,7 +70,7 @@ var lambda;             // wavelength
 var Omega=0;
 
 //parameters regarding the detector banks
-var HD = 0;    // height of center of PSD from incident beam (mm)
+var HD = 20;    // height of center of PSD from incident beam (mm)
 var LD = 2800;  // length of PSD (mm)
 const LB20 = 4004.0 // distance from sample to the center of high-angle detector bank
 const widthB = 1324.87 // full width of detector array for a bank
