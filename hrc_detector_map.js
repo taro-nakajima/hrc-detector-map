@@ -13,7 +13,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.7.3";
+var version = "1.0";
 
 // dimensions of the canvas object
 var scaleX=800;
@@ -61,14 +61,16 @@ var Hmax;
 var Kmax;
 var Lmax;
 
-var Ei_max = 600;
+var Ei_max = 300;
 
 var phih;
 var phiv;
 var lambda;             // wavelength 
 
+var Omega=0;
+
 //parameters regarding the detector banks
-var HD = 0;    // height of center of PSD from incident beam (mm)
+var HD = 20;    // height of center of PSD from incident beam (mm)
 var LD = 2800;  // length of PSD (mm)
 const LB20 = 4004.0 // distance from sample to the center of high-angle detector bank
 const widthB = 1324.87 // full width of detector array for a bank
@@ -96,6 +98,7 @@ function init_draw(){
     document.getElementById("verNum").innerHTML=version;
     document.getElementById("verNum2").innerHTML=version;
     set_SamplePosition();
+    setFreeRotMode();
     draw();
 }
 
@@ -130,6 +133,17 @@ function Ei_max_adjust_and_draw(){
     document.getElementById("Ei_max_disp").value = document.getElementById("Ei_max").value;
     Ei_max = Number(document.getElementById("Ei_max").value);
     draw_DetMap();
+}
+
+function omegaRot_and_draw(){
+    let targetOmega=Number(document.getElementById("targetOmega").value);
+    const deltaOmega = (targetOmega-Omega)/180.0*Math.PI;
+    xyz_rotation(2,-deltaOmega);    //"2" means rotation about the z axis. a minus sign is necessary because directions of omega- and z-rotations are opposite to each other.
+    showUBmatrix();
+    draw_DetMap();
+    draw_OriViewer();
+    Omega=targetOmega;
+    document.getElementById("currentOmega_disp").innerHTML=String(Omega);
 }
 
 function set_Lattice(){
@@ -307,7 +321,7 @@ function draw_DetMap(){
         for (var K=-Kmax;K<=Kmax;K+=1){
             for (var L=-Lmax;L<=Lmax;L+=1){
 
-                if(((H==0)&&(K==0)&&(L==0))||check_ReflectionCondition(RefCon,H,K,L)==false){
+                if(check_ReflectionCondition(RefCon,H,K,L)==false){
                     // Reflection condition is not satisfied or H=K=L=0.
                 }
                 else{
@@ -345,9 +359,10 @@ function draw_DetMap(){
     isTargetHKL=true;
     showHKL=false;
     context.strokeStyle = fundamental_color;
-    let Ht=Number(document.getElementById("Ht").value);
-    let Kt=Number(document.getElementById("Kt").value);
-    let Lt=Number(document.getElementById("Lt").value);
+    let Ht=-Number(document.getElementById("Ht").value);
+    let Kt=-Number(document.getElementById("Kt").value);
+    let Lt=-Number(document.getElementById("Lt").value);
+    //minus signs are necessary to convert Q=kf-ki to Q=ki-kf.
 
     let isAccessible = false;
 
@@ -392,7 +407,7 @@ function drawBraggReflection(context1,H1,K1,L1,isTargetHKL1,showHKL1){
         lambda = 2.0*Math.PI/Ki;    // Angstrome
         let Ei_hkl = 2.072*Ki**2.0;
 
-        if(Ei_hkl<Ei_max && isDarkEi(Ei_hkl)==false){   // lambda_min=2PI/sqrt(Ei_max/2.072)
+        if(Ei_hkl<Ei_max && isDarkEi(Ei_hkl)==false && G_sq > 0){   // lambda_min=2PI/sqrt(Ei_max/2.072), the case that H=K=L=0 is avoided by the condition of  G_sq > 0.
 
             phiv = Math.atan2(Ghkl[2], Math.sqrt((Ghkl[0]+Ki)**2.0+Ghkl[1]**2.0));
             phih = Math.atan2(Ghkl[1],Ghkl[0]+Ki);
@@ -419,7 +434,9 @@ function drawBraggReflection(context1,H1,K1,L1,isTargetHKL1,showHKL1){
                 context1.stroke();
 
                 if(showHKL1==true){
-                    context1.fillText(String(H1)+String(K1)+String(L1), PosX, PosY+txt_ofst1);
+                    context1.fillText(String(-H1)+String(-K1)+String(-L1), PosX, PosY+txt_ofst1);   
+                    //Thus far, the Bragg conditions are calculated assuming that the scattering vector is defined as Q=kf-ki.
+                    //However, the correct definition of the scattering vector is Q=ki-kf, which is momentum of the excitation. Thus, "-" signs are necessary to change Q=kf-ki to Q=ki-kf.
                 }
 
                 return_value=true;
@@ -464,52 +481,54 @@ function isDarkEi(Ei_hkl){
 }
 
 function rot_Lattice(rot_ax_dir){
-    let deg = 0.0;
+    let angle = 0.0;  // radian unit
     let xyz         // xyz=(0,1,2) for (x, y, z)-axis respectively.
     switch(rot_ax_dir){
         case 'rot_x_plus':
-            deg = Number(document.getElementById('rot_x_deg').value)/180.0*Math.PI;
+            angle = Number(document.getElementById('rot_x_deg').value)/180.0*Math.PI;
             xyz =0.0;
             break;
         case 'rot_x_minus':
-            deg = (-1.0)*Number(document.getElementById('rot_x_deg').value)/180.0*Math.PI;
+            angle = (-1.0)*Number(document.getElementById('rot_x_deg').value)/180.0*Math.PI;
             xyz =0.0;
             break;
         case 'rot_y_plus':
-            deg = Number(document.getElementById('rot_y_deg').value)/180.0*Math.PI;
+            angle = Number(document.getElementById('rot_y_deg').value)/180.0*Math.PI;
             xyz =1.0;
             break;
         case 'rot_y_minus':
-            deg = (-1.0)*Number(document.getElementById('rot_y_deg').value)/180.0*Math.PI;
+            angle = (-1.0)*Number(document.getElementById('rot_y_deg').value)/180.0*Math.PI;
             xyz =1.0;
             break;
         case 'rot_z_plus':
-            deg = Number(document.getElementById('rot_z_deg').value)/180.0*Math.PI;
+            angle = Number(document.getElementById('rot_z_deg').value)/180.0*Math.PI;
             xyz =2.0;
             break;
         case 'rot_z_minus':
-            deg = (-1.0)*Number(document.getElementById('rot_z_deg').value)/180.0*Math.PI;
+            angle = (-1.0)*Number(document.getElementById('rot_z_deg').value)/180.0*Math.PI;
             xyz =2.0;
             break;
         default:
     }
-    xyz_rotation(xyz,deg);
+    xyz_rotation(xyz,angle);
 }
 
-function xyz_rotation(xyz,deg){
+function xyz_rotation(xyz,angle){
+    //xyz : 0=x, 1=y, 2=z
+    //angle : rotation angle (radian units)
     let r00;
     let r01;
 
-    r00=a_star[(xyz+1)%3]*Math.cos(deg)-a_star[(xyz+2)%3]*Math.sin(deg);
-    r01=a_star[(xyz+1)%3]*Math.sin(deg)+a_star[(xyz+2)%3]*Math.cos(deg);
+    r00=a_star[(xyz+1)%3]*Math.cos(angle)-a_star[(xyz+2)%3]*Math.sin(angle);
+    r01=a_star[(xyz+1)%3]*Math.sin(angle)+a_star[(xyz+2)%3]*Math.cos(angle);
     a_star[(xyz+1)%3]=r00;
     a_star[(xyz+2)%3]=r01;
-    r00=b_star[(xyz+1)%3]*Math.cos(deg)-b_star[(xyz+2)%3]*Math.sin(deg);
-    r01=b_star[(xyz+1)%3]*Math.sin(deg)+b_star[(xyz+2)%3]*Math.cos(deg);
+    r00=b_star[(xyz+1)%3]*Math.cos(angle)-b_star[(xyz+2)%3]*Math.sin(angle);
+    r01=b_star[(xyz+1)%3]*Math.sin(angle)+b_star[(xyz+2)%3]*Math.cos(angle);
     b_star[(xyz+1)%3]=r00;
     b_star[(xyz+2)%3]=r01;
-    r00=c_star[(xyz+1)%3]*Math.cos(deg)-c_star[(xyz+2)%3]*Math.sin(deg);
-    r01=c_star[(xyz+1)%3]*Math.sin(deg)+c_star[(xyz+2)%3]*Math.cos(deg);
+    r00=c_star[(xyz+1)%3]*Math.cos(angle)-c_star[(xyz+2)%3]*Math.sin(angle);
+    r01=c_star[(xyz+1)%3]*Math.sin(angle)+c_star[(xyz+2)%3]*Math.cos(angle);
     c_star[(xyz+1)%3]=r00;
     c_star[(xyz+2)%3]=r01;
 }
@@ -632,6 +651,7 @@ function showUBmatrix(){
     document.getElementById('cs_x').value = Math.round((c_star[0]*decimal_digit))/decimal_digit;
     document.getElementById('cs_y').value = Math.round((c_star[1]*decimal_digit))/decimal_digit;
     document.getElementById('cs_z').value = Math.round((c_star[2]*decimal_digit))/decimal_digit;
+
 }
 
 //--------------------------------------
@@ -652,4 +672,47 @@ function det2posX(det){     // convert detector number to x-axis of detector map
 
 function calcL20(det){      // calculate L20 
     return Math.sqrt(LB20**2.0+(widthB*(0.5-((det%numDetinBank)+0.5)/numDetinBank))**2.0)
+}
+
+function setFreeRotMode(){
+    document.getElementById("freeRot").disabled=false;
+    document.getElementById("freeRot").checked=true;
+    document.getElementById("omegaRot").disabled=true;
+    document.getElementById("rot_x_plus").disabled=false;
+    document.getElementById("rot_x_minus").disabled=false;
+    document.getElementById("rot_y_plus").disabled=false;
+    document.getElementById("rot_y_minus").disabled=false;
+    document.getElementById("rot_z_plus").disabled=false;
+    document.getElementById("rot_z_minus").disabled=false;
+    document.getElementById("omgRotGoBtn").disabled=true;
+    document.getElementById("targetOmega").disabled=true;
+
+    document.getElementById("rot_x_deg").disabled=false;
+    document.getElementById("rot_y_deg").disabled=false;
+    document.getElementById("rot_z_deg").disabled=false;
+}
+
+function setOmegaRotMode(){
+    Omega = Number(document.getElementById("currentOmega").value);
+    document.getElementById("omegaRot").disabled=false;
+    document.getElementById("omegaRot").checked=true;
+    document.getElementById("freeRot").disabled=false;
+    document.getElementById("rot_x_plus").disabled=true;
+    document.getElementById("rot_x_minus").disabled=true;
+    document.getElementById("rot_y_plus").disabled=true;
+    document.getElementById("rot_y_minus").disabled=true;
+    document.getElementById("rot_z_plus").disabled=true;
+    document.getElementById("rot_z_minus").disabled=true;
+    document.getElementById("currentOmega_disp").innerHTML=String(Omega);
+    document.getElementById("omgRotGoBtn").disabled=false;
+    document.getElementById("targetOmega").disabled=false;
+
+    document.getElementById("rot_x_deg").disabled=true;
+    document.getElementById("rot_y_deg").disabled=true;
+    document.getElementById("rot_z_deg").disabled=true;
+
+    let psi_h = Math.atan2((u[0]*a_star[1]+u[1]*b_star[1]+u[2]*c_star[1]),(u[0]*a_star[0]+u[1]*b_star[0]+u[2]*c_star[0]))/Math.PI*180.0;
+    let Omg_ofst = Omega+psi_h;
+    document.getElementById("Omg_ofst").innerHTML=String(Math.round((Omg_ofst*decimal_digit))/decimal_digit);
+
 }

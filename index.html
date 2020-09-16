@@ -1,5 +1,5 @@
 <head>
-<title >Neutron Laue Pattern Simulator of HRC(BL12)</title>
+<title >Neutron Laue Diffraction Pattern Simulator for HRC(BL12)</title>
 <link rel="stylesheet" type="text/css" href="./common.css">
 <script type="text/javascript" src="./hrc_detector_map.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
@@ -9,7 +9,7 @@
     <div class="fullbox">
     <table class="header_table">
         <tr>
-            <td ><font class="mytitle">Neutron Laue Pattern Simulator of HRC(BL12)</font> <font color="white">ver</font> <font color="white" id="verNum"></font></td>
+            <td ><font class="mytitle">Neutron Laue Diffraction Pattern Simulator for HRC(BL12)</font> <font color="white">ver</font> <font color="white" id="verNum"></font></td>
         </tr>
     </table>
     </div>
@@ -27,7 +27,7 @@
                 <br />
                 <div class="section_02">Sample orientation viewer</div>
                 <canvas id="OrientationViewer" class="box"></canvas><br />
-                <font color="red">a* &rarr;</font>, <font color="green">b* &rarr;</font>, <font color="blue">c* &rarr;</font><br />
+                <font color="red"><i><b>a</b></i>* &rarr;</font>, <font color="green"><i><b>b</b></i>* &rarr;</font>, <font color="blue"><i><b>c</b></i>* &rarr;</font><br />
     
             </td>
             <td width=20>
@@ -69,8 +69,8 @@
                         <br />
         
                         <b>Orientation </b><br />
-                        <b><i>u</i></b> = [<input size="6" id="u1" value="1">,<input size="6" id="u2" value="0">,<input size="6" id="u3" value="0">]<br />
-                        <b><i>v</i></b> = [<input size="6" id="v1" value="0">,<input size="6" id="v2" value="1">,<input size="6" id="v3" value="0">]<br />
+                        <b><i>u</i></b> = (<input size="6" id="u1" value="1">,<input size="6" id="u2" value="0">,<input size="6" id="u3" value="0">)<br />
+                        <b><i>v</i></b> = (<input size="6" id="v1" value="0">,<input size="6" id="v2" value="1">,<input size="6" id="v3" value="0">)<br />
                         (<b><i>u</i></b>: diraction parallel to incident beam. <br />
                         <b><i>v</i></b>: another direction in the beam horizontal plane.) <br />
                         <input type="button" value="   Set orientation  " onclick="draw()"/><br />
@@ -88,10 +88,10 @@
                         <table>
                             <tr>
                                 <td>
-                                    <input type="range" value="500" min="10" max="1000" step="10" id="Ei_max" oninput="Ei_max_adjust_and_draw()">
+                                    <input type="range" value="300" min="10" max="1000" step="10" id="Ei_max" oninput="Ei_max_adjust_and_draw()">
                                 </td>
                                 <td>
-                                    <input size="5" value="500" id="Ei_max_disp"> meV
+                                    <input size="5" value="300" id="Ei_max_disp"> meV
                                 </td>
                             </tr>
                         </table>
@@ -106,7 +106,7 @@
 
                         <div class="section_02">Sample position </div>
                         <b>Vertical offset</b><br />
-                        <input size="5" value="0" id="HD"> mm <input type="button" value=" set " onclick="set_SamPos_and_draw()"/><br />
+                        <input size="5" value="20" id="HD"> mm <input type="button" value=" set " onclick="set_SamPos_and_draw()"/><br />
                         difference in height between sample and the center of the detector tubes. 
         
 
@@ -121,10 +121,19 @@
                         <br />
 
                         <div class="section_02">Sample rotation </div>
+                        <input type="radio" name="rotType" value="free" id="freeRot" class="rotTypeButton" onchange="setFreeRotMode()" checked><label target="freeRot"> <b>Free rotation</b></label><br />
                         <input size="5" id="rot_x_deg" value="1"> deg. <input type="button" value="  rotate x+  " id="rot_x_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate x-  " id="rot_x_minus" onclick="rot_and_draw(this.id)" /><br />
                         <input size="5" id="rot_y_deg" value="1"> deg. <input type="button" value="  rotate y+  " id="rot_y_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate y-  " id="rot_y_minus" onclick="rot_and_draw(this.id)" /><br />
                         <input size="5" id="rot_z_deg" value="1"> deg. <input type="button" value="  rotate z+  " id="rot_z_plus" onclick="rot_and_draw(this.id)" /><input type="button" value="  rotate z-  " id="rot_z_minus" onclick="rot_and_draw(this.id)" /><br />
-
+                        Set the current orientation as "&omega;=<input type="text" size=5 id="currentOmega"> deg" <input type="button" value=" set " onclick="setOmegaRotMode()"><br />
+                        <br />
+                        <input type="radio" name="rotType" value="omega" id="omegaRot" class="rotTypeButton" disabled><label target="freeRot"> <b>&omega; rotation</b></label><br />
+                        Current &omega;: <font id="currentOmega_disp">0</font> deg.<br />
+                        Go to &omega;= <input type="text" size=5 id="targetOmega"> deg <input type="button" value=" Go " id="omgRotGoBtn" onclick="omegaRot_and_draw()"><br />                        
+                        <div class="box2">
+                            &psi;<sub>h</sub>= -(&omega;-&omega;<sub>offset</sub>), &omega;<sub>offset</sub>=<font id="Omg_ofst"></font> deg<br />
+                        (&psi;<sub>h</sub>: angle between <b><i>k</i></b><sub>i</sub> and <b><i>u</i></b><sub>h</sub>=(<i>u</i><sub>x</sub>,<i>u</i><sub>y</sub>,0))<br />
+                        </div>
                         <br />
                         <div class="section_02">Target reflection </div>
                         (<i>H</i><sub>t</sub>,<i>K</i><sub>t</sub>,<i>L</i><sub>t</sub>)=(<input size="5" id="Ht" value="0">,<input size="5" id="Kt" value="0">,<input size="5" id="Lt" value="0">)
@@ -195,7 +204,7 @@
                                     Horizontal: 
                                 </td>
                                 <td>
-                                    <input type="range" value="-30" min="-60" max="60" step="1" id="cam_phi" oninput="draw_OriViewer()">
+                                    <input type="range" value="0" min="-60" max="60" step="1" id="cam_phi" oninput="draw_OriViewer()">
                                 </td>
                             </tr>
                             <tr>
@@ -203,7 +212,7 @@
                                     Vertical: 
                                 </td>
                                 <td>
-                                    <input type="range" value="60" min="0" max="90" step="1" id="cam_theta" oninput="draw_OriViewer()">
+                                    <input type="range" value="0" min="0" max="90" step="1" id="cam_theta" oninput="draw_OriViewer()">
                                 </td>
                             </tr>
                         </table>
@@ -222,6 +231,6 @@
 </table>
 <br />
 
-<div class="footer"> Version <font id="verNum2"></font> by D. Kawana and T. Nakajima</a>, 2020.</div>
+<div class="footer"> Version <font id="verNum2"></font> by D. Kawana and <a href="https://nakajima.issp.u-tokyo.ac.jp" target="_blank">T. Nakajima</a> in ISSP-NSL, 2020.</div>
 </div> <!--end of mainbody-->
 </body>
