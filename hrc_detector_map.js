@@ -105,7 +105,7 @@ function init_draw(){
 function draw() {
 
     set_Lattice();
-    rotate_Goniometer();
+//    rotate_Goniometer();
     set_ReflectionCondition();
     showUBmatrix();
     Ei_max_adjust_and_draw();
@@ -271,10 +271,10 @@ function set_SamplePosition(){
     HD=Number(document.getElementById("HD").value);
 }
 
-function rotate_Goniometer(){
-    Psi=Number(document.getElementById("Psi").value)/180.0*Math.PI;
-    xyz_rotation(2,-Psi)     // xyz=2 means z-axis rotation.
-}
+//function rotate_Goniometer(){
+//    Psi=Number(document.getElementById("Psi").value)/180.0*Math.PI;
+//    xyz_rotation(2,-Psi)     // xyz=2 means z-axis rotation.
+//}
 
 function draw_DetMap(){
 
