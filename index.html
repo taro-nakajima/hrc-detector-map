@@ -27,7 +27,7 @@
                 <br />
                 <div class="section_02">Sample orientation viewer</div>
                 <canvas id="OrientationViewer" class="box"></canvas><br />
-                <font color="red">a* &rarr;</font>, <font color="green">b* &rarr;</font>, <font color="blue">c* &rarr;</font><br />
+                <font color="red"><i><b>a</b></i>* &rarr;</font>, <font color="green"><i><b>b</b></i>* &rarr;</font>, <font color="blue"><i><b>c</b></i>* &rarr;</font><br />
     
             </td>
             <td width=20>
@@ -204,7 +204,7 @@
                                     Horizontal: 
                                 </td>
                                 <td>
-                                    <input type="range" value="-30" min="-60" max="60" step="1" id="cam_phi" oninput="draw_OriViewer()">
+                                    <input type="range" value="0" min="-60" max="60" step="1" id="cam_phi" oninput="draw_OriViewer()">
                                 </td>
                             </tr>
                             <tr>
@@ -212,7 +212,7 @@
                                     Vertical: 
                                 </td>
                                 <td>
-                                    <input type="range" value="60" min="0" max="90" step="1" id="cam_theta" oninput="draw_OriViewer()">
+                                    <input type="range" value="0" min="0" max="90" step="1" id="cam_theta" oninput="draw_OriViewer()">
                                 </td>
                             </tr>
                         </table>
@@ -231,6 +231,6 @@
 </table>
 <br />
 
-<div class="footer"> Version <font id="verNum2"></font> by D. Kawana and T. Nakajima</a>, 2020.</div>
+<div class="footer"> Version <font id="verNum2"></font> by D. Kawana and <a href="https://nakajima.issp.u-tokyo.ac.jp" target="_blank">T. Nakajima</a> in ISSP-NSL, 2020.</div>
 </div> <!--end of mainbody-->
 </body>

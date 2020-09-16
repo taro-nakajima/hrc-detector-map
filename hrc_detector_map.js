@@ -13,7 +13,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "0.8.3b";
+var version = "1.0";
 
 // dimensions of the canvas object
 var scaleX=800;
