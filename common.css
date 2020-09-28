@@ -158,7 +158,7 @@ A:active.headerLink{
 }
 
 A:hover.headerLink{
-    color : #FF0000;
+    color : lightgray;
     text-decoration : none;
 }
 
