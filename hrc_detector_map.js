@@ -13,7 +13,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "1.0";
+var version = "1.1";
 
 // dimensions of the canvas object
 var scaleX=800;
@@ -365,27 +365,12 @@ function draw_DetMap(){
     //minus signs are necessary to convert Q=kf-ki to Q=ki-kf.
 
     let isAccessible = false;
-
-    if(check_ReflectionCondition(RefCon,Ht,Kt,Lt)==false){
-        document.getElementById("Q_len").innerHTML="[forbidden]";
-        document.getElementById("phi").innerHTML="[forbidden]";
-        document.getElementById("phih").innerHTML="[forbidden]";
-        document.getElementById("lambda").innerHTML="[forbidden]";
-    }
-    else if(((Ht==0)&&(Kt==0)&&(Lt==0))||(Ghkl[0]>=0.0)){
-        isAccessible=false;
-    }
-    else{
-        isAccessible=drawBraggReflection(context,Ht,Kt,Lt,isTargetHKL,showHKL);
-    }
-
-    if(isAccessible==false){
-        document.getElementById("Q_len").innerHTML="[not accessible]";
-        document.getElementById("phi").innerHTML="[not accessible]";
-        document.getElementById("phih").innerHTML="[not accessible]";
-        document.getElementById("lambda").innerHTML="[not accessible]";
-    }
-
+    document.getElementById("Q_len").innerHTML="[not accessible]";
+    document.getElementById("phi").innerHTML="[not accessible]";
+    document.getElementById("phih").innerHTML="[not accessible]";
+    document.getElementById("phiv").innerHTML="[not accessible]";
+    document.getElementById("lambda").innerHTML="[not accessible]";
+    drawBraggReflection(context,Ht,Kt,Lt,isTargetHKL,showHKL);
 
 }
 
@@ -421,10 +406,12 @@ function drawBraggReflection(context1,H1,K1,L1,isTargetHKL1,showHKL1){
                 if(isTargetHKL1==true){
                     let phi_deg = Math.asin(Math.sqrt(G_sq)/(2.0*Ki))*2.0/Math.PI*180.0;
                     let phih_deg = phih/Math.PI*180.0;
+                    let phiv_deg = phiv/Math.PI*180.0;
         
                     document.getElementById("Q_len").innerHTML=Math.round(Math.sqrt(G_sq)*decimal_digit)/decimal_digit;
                     document.getElementById("phi").innerHTML=Math.round(phi_deg*decimal_digit)/decimal_digit;
                     document.getElementById("phih").innerHTML=Math.round(phih_deg*decimal_digit)/decimal_digit;
+                    document.getElementById("phiv").innerHTML=Math.round(phiv_deg*decimal_digit)/decimal_digit;
                     document.getElementById("lambda").innerHTML=Math.round(lambda*decimal_digit)/decimal_digit;        
                     context1.arc(PosX,PosY, radius_tgt, 0, 2 * Math.PI);
                 }
