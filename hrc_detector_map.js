@@ -13,7 +13,7 @@
 // 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
 // 2020/6/18-19,  introduced lattice constants and sample orientation 
 // 2020/6/5
-var version = "1.1";
+var version = "1.2";
 
 // dimensions of the canvas object
 var scaleX=800;
@@ -130,8 +130,23 @@ function rot_and_draw(rot_ax_dir) {
 }
 
 function Ei_max_adjust_and_draw(){
-    document.getElementById("Ei_max_disp").value = document.getElementById("Ei_max").value;
-    Ei_max = Number(document.getElementById("Ei_max").value);
+    let Ei_max_by_T0=700.0;
+    switch(document.getElementById("T0_freq").value){
+        case "T0_25Hz":
+            Ei_max_by_T0=160.0;
+            break;
+        case "T0_50Hz":
+            Ei_max_by_T0=700.0;
+            break;
+        case "T0_100Hz":
+            Ei_max_by_T0=2600.0;
+            break;
+        default:       
+        Ei_max_by_T0=700.0;
+    }    
+//    document.getElementById("Ei_max_disp").value = document.getElementById("Ei_max").value;
+    Ei_max = Number(document.getElementById("Ei_max").value)/1000.0*Ei_max_by_T0;
+    document.getElementById("Ei_max_disp").value = Ei_max;
     draw_DetMap();
 }
 
