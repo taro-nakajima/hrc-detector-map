@@ -10,7 +10,7 @@
 </script>
 <title >Neutron Laue Diffraction Pattern Simulator for HRC(BL12)</title>
 <link rel="stylesheet" type="text/css" href="./common.css">
-<script type="text/javascript" src="./hrc_detector_map.js"></script>
+<script type="text/javascript" src="./hrc_detector_map.js?20210105"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
 <meta charset="UTF-8">
 </head>
@@ -110,7 +110,7 @@
                         </table>
                         <br />
                         <b>Dark <i>E</i><sub>i</sub>-range due to T<sub>0</sub> chopper</b><br />
-                            <select id="T0_freq" onchange="draw_DetMap()">
+                            <select id="T0_freq" onchange="Ei_max_adjust_and_draw()">
                                 <option value="T0_25Hz">25 Hz (Ei > 160 meV)</option>
                                 <option value="T0_50Hz" selected>50Hz (Ei > 700 meV, 4.9 > Ei > 3.8 meV)</option>
                                 <option value="T0_100Hz">100Hz (Ei > 2.6 eV, 70 > Ei > 40 meV, 4.6 > Ei > 4 meV</option>
