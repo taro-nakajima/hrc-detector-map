@@ -565,7 +565,7 @@ function draw_OriViewer(){
     //THREE.js coordinates (x3,y3,z3) 
     //transformation : x3=x, y3=z, z3=-y  
     // detector banks
-    const material1 = new THREE.MeshStandardMaterial({ color: 0xC0C0C0 });  // color of detector bank
+    const material1 = new THREE.MeshStandardMaterial({ color: 0x808080 });  // color of detector bank
     let geometry = new Array(BankAngleMin.length);
     let mesh = new Array(BankAngleMin.length);
 
