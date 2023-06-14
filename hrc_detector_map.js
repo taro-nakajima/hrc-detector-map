@@ -422,12 +422,18 @@ function drawBraggReflection(context1,H1,K1,L1,isTargetHKL1,showHKL1){
                     let phi_deg = Math.asin(Math.sqrt(G_sq)/(2.0*Ki))*2.0/Math.PI*180.0;
                     let phih_deg = phih/Math.PI*180.0;
                     let phiv_deg = phiv/Math.PI*180.0;
+
+                    const Len1=15000.0;
+                    const Len2=calcL20(phih2det(phih))*Math.sqrt(1.0+(Math.tan(phiv))**2.0);
+                    const flightLen=Len1+Len2;
+                    const TOF=flightLen/1000.0/(3.956/lambda);
         
                     document.getElementById("Q_len").innerHTML=Math.round(Math.sqrt(G_sq)*decimal_digit)/decimal_digit;
                     document.getElementById("phi").innerHTML=Math.round(phi_deg*decimal_digit)/decimal_digit;
                     document.getElementById("phih").innerHTML=Math.round(phih_deg*decimal_digit)/decimal_digit;
                     document.getElementById("phiv").innerHTML=Math.round(phiv_deg*decimal_digit)/decimal_digit;
                     document.getElementById("lambda").innerHTML=Math.round(lambda*decimal_digit)/decimal_digit;        
+                    document.getElementById("TOF").innerHTML=Math.round(TOF*decimal_digit)/decimal_digit;        
                     context1.arc(PosX,PosY, radius_tgt, 0, 2 * Math.PI);
                 }
                 else{
