@@ -1,19 +1,5 @@
 //JavaScript code for simulation of neutron Laue diffraction pattern at HRC
-
-// 2020/8/20, activated reflection condition
-// 2020/8/19, changed phih to detector number (128-383) 
-// 2020/8/17, changed Hmax, Kmax, and Lmax to indexMax defined using maximum of lattice constant
-// 2020/8/4, displayed indicies for debug
-// 2020/8/4, changed Ki to -|G|^2/Gx
-// 2020/8/3, changed G to Q=(Gx+Ki,Gy,Gz), but not verified
-// 2020/7/28, redefined phiv and phih using Math.atan2
-// 2020/7/9, introduced x,y, and z-axes rotation
-// 2020/7/7, resolved uy2uz2 division by zero
-// 2020/6/25, corrected ux[i]s and expression of reciprocal lattice vectors
-// 2020/6/24,  defined 3 reciprocal lattice vectors a*, b* and c* for a sample orientation without rotation (Psi=0) 
-// 2020/6/18-19,  introduced lattice constants and sample orientation 
-// 2020/6/5
-var version = "1.2";
+const version = "1.3";
 
 // dimensions of the canvas object
 var scaleX=800;
@@ -71,7 +57,8 @@ var Omega=0;
 
 //parameters regarding the detector banks
 var HD = 20;    // height of center of PSD from incident beam (mm)
-var LD = 2800;  // length of PSD (mm)
+const LD = 2800;  // length of PSD (mm)
+const L1_len=15000.0; // distance from the modelator to the sample.
 const LB20 = 4004.0 // distance from sample to the center of high-angle detector bank
 const widthB = 1324.87 // full width of detector array for a bank
 const BankAngleMin = [0.049428538, 0.407221034, 0.765013531, -0.544643747]; // angles of the right edge of the detector banks (rad)
@@ -238,7 +225,7 @@ function set_ReflectionCondition(){
 }
 
 function check_ReflectionCondition(RefCon,H,K,L){
-    var retstr=false;
+    let retstr=false;
 
     switch(RefCon){
         case 'none':
@@ -385,6 +372,8 @@ function draw_DetMap(){
     document.getElementById("phih").innerHTML="[not accessible]";
     document.getElementById("phiv").innerHTML="[not accessible]";
     document.getElementById("lambda").innerHTML="[not accessible]";
+    document.getElementById("TOF").innerHTML="[not accessible]";
+    document.getElementById("Ei").innerHTML="[not accessible]";
     drawBraggReflection(context,Ht,Kt,Lt,isTargetHKL,showHKL);
 
 }
@@ -423,7 +412,7 @@ function drawBraggReflection(context1,H1,K1,L1,isTargetHKL1,showHKL1){
                     let phih_deg = phih/Math.PI*180.0;
                     let phiv_deg = phiv/Math.PI*180.0;
 
-                    const Len1=15000.0;
+                    const Len1=L1_len;
                     const Len2=calcL20(phih2det(phih))*Math.sqrt(1.0+(Math.tan(phiv))**2.0);
                     const flightLen=Len1+Len2;
                     const TOF=flightLen/1000.0/(3.956/lambda);
@@ -433,7 +422,8 @@ function drawBraggReflection(context1,H1,K1,L1,isTargetHKL1,showHKL1){
                     document.getElementById("phih").innerHTML=Math.round(phih_deg*decimal_digit)/decimal_digit;
                     document.getElementById("phiv").innerHTML=Math.round(phiv_deg*decimal_digit)/decimal_digit;
                     document.getElementById("lambda").innerHTML=Math.round(lambda*decimal_digit)/decimal_digit;        
-                    document.getElementById("TOF").innerHTML=Math.round(TOF*decimal_digit)/decimal_digit;        
+                    document.getElementById("TOF").innerHTML=Math.round(TOF*decimal_digit)/decimal_digit;
+                    document.getElementById("Ei").innerHTML=Math.round(Ei_hkl*decimal_digit)/decimal_digit;
                     context1.arc(PosX,PosY, radius_tgt, 0, 2 * Math.PI);
                 }
                 else{
